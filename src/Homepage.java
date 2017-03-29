@@ -37,10 +37,24 @@ public class Homepage {
 
 			break;
 
+		case 2:
+
+			System.out.println("Enter Student ID: ");
+			String sid = in.nextLine();
+			opt = "y";
+
+			while (opt.toLowerCase().equals("y"))
+				getStud(in, sid);
+			break;
+
 		default:
 			System.out.println("Invalid Option");
 			break;
 		}
+
+	}
+
+	private static void getStud(Scanner in, String sid) {
 
 	}
 
