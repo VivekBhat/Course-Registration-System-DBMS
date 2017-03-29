@@ -22,16 +22,18 @@ public class Homepage {
 		// System.out.println("Username is: " + username);
 		// System.out.println("Password is: " + password);
 		// System.out.println();
-
-		System.out.println("Please choose an option:");
-		System.out.println("1 to enter new student data");
-		System.out.println("2 to get Student Info");
-		System.out.println("3 to View or Add Course");
-		int option = in.nextInt();
-		in.nextLine();
-		String opt = "y";
 		boolean switchOption = true;
+
 		while (switchOption) {
+			System.out.println("Please choose an option:");
+			System.out.println("1 to enter new student data");
+			System.out.println("2 to get Student Info");
+			System.out.println("3 to View or Add Course");
+			System.out.println("4 to View or Add Course Offering");
+			int option = in.nextInt();
+			in.nextLine();
+			String opt = "y";
+
 			switch (option) {
 			case 1:
 				opt = "y";
@@ -45,7 +47,9 @@ public class Homepage {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
-				switchOption = false;
+
+				switchOption = goBackToMenuOption(in);
+
 				break;
 
 			case 2:
@@ -60,7 +64,8 @@ public class Homepage {
 
 				while (opt.toLowerCase().equals("y"))
 					getStud(in, sid);
-				switchOption = false;
+				switchOption = goBackToMenuOption(in);
+
 				break;
 
 			case 3:
@@ -72,7 +77,8 @@ public class Homepage {
 				opt = "y";
 				while (opt.toLowerCase().equals("y"))
 					viewOrAdd(in, sid);
-				switchOption = false;
+				switchOption = goBackToMenuOption(in);
+
 				break;
 
 			case 4:
@@ -85,15 +91,32 @@ public class Homepage {
 				while (opt.toLowerCase().equals("y"))
 					viewOrAdd(in, sid);
 
-				switchOption = false;
+				switchOption = goBackToMenuOption(in);
+
 				break;
 
 			default:
 				System.out.println("Invalid Option");
-				break;
+				switchOption = goBackToMenuOption(in);
 			}
 
 		}
+
+	}
+
+	private static boolean goBackToMenuOption(Scanner in) {
+		boolean switchOption;
+		String switchOptionInput;
+		System.out.println("To go back to the main menu press 'y'\nOr else press any key to exit");
+		switchOptionInput = in.nextLine();
+
+		if (switchOptionInput.toLowerCase().equals("y")) {
+			switchOption = true;
+		} else {
+			switchOption = false;
+			System.out.println("\nExiting...\n");
+		}
+		return switchOption;
 	}
 
 	private static void viewOrAdd(Scanner in, String sid) {
