@@ -1,3 +1,4 @@
+import java.io.IOException;
 import java.sql.Date;
 import java.util.Scanner;
 
@@ -14,7 +15,7 @@ public class Homepage {
 		System.out.println("Enter password:");
 		String password = in.nextLine();
 
-		String id, email, f_name, l_name, address, date;
+		String sid;
 		Date dob;
 		System.out.println("Hello Admin");
 		//
@@ -25,15 +26,24 @@ public class Homepage {
 		System.out.println("Please choose an option:");
 		System.out.println("1 to enter new student data");
 		System.out.println("2 to get Student Info");
+		System.out.println("3 to View or Add Course");
 		int option = in.nextInt();
+		in.nextLine();
 		String opt = "y";
+
 		switch (option) {
 		case 1:
-			in.nextLine();
 			opt = "y";
 
-			while (opt.toLowerCase().equals("y"))
-				newStud(in, opt);
+			while (opt.toLowerCase().equals("y")) {
+				opt = newStud(in, opt);
+			}
+			try {
+				Runtime.getRuntime().exec("clear");
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 
 			break;
 
@@ -42,8 +52,9 @@ public class Homepage {
 			 * Task: After Showing details. Provide 2 options Check another
 			 * student details Enter grades for this student
 			 */
+
 			System.out.println("Enter Student ID: ");
-			String sid = in.nextLine();
+			sid = in.nextLine();
 			opt = "y";
 
 			while (opt.toLowerCase().equals("y"))
@@ -52,8 +63,12 @@ public class Homepage {
 
 		case 3:
 
+			System.out.println("Enter Student ID: ");
+			sid = in.nextLine();
+
+			opt = "y";
 			while (opt.toLowerCase().equals("y"))
-				viewOrAdd(in);
+				viewOrAdd(in, sid);
 
 			break;
 
@@ -64,7 +79,7 @@ public class Homepage {
 
 	}
 
-	private static void viewOrAdd(Scanner in) {
+	private static void viewOrAdd(Scanner in, String sid) {
 		// TODO Auto-generated method stub
 
 	}
@@ -73,8 +88,8 @@ public class Homepage {
 
 	}
 
-	private static void newStud(Scanner in, String opt) {
-		String id;
+	private static String newStud(Scanner in, String opt) {
+		String sid;
 		String email;
 		String f_name;
 		String l_name;
@@ -86,7 +101,7 @@ public class Homepage {
 		System.out.println("Enter Last Name of the student: ");
 		l_name = in.nextLine();
 		System.out.println("Enter id of the student: ");
-		id = in.nextLine();
+		sid = in.nextLine();
 		System.out.println("Enter Email of the student: ");
 		email = in.nextLine();
 		System.out.println("Enter Address of the student: ");
@@ -108,10 +123,9 @@ public class Homepage {
 
 		System.out.println("Press 'y' to enter more");
 		opt = in.nextLine();
-		for (
 
-				int i = 0; i < 100; ++i)
-			System.out.println();
+		return opt;
+
 	}
 
 }
