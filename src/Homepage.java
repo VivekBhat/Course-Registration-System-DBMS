@@ -38,7 +38,10 @@ public class Homepage {
 			break;
 
 		case 2:
-
+			/*
+			 * Task: After Showing details. Provide 2 options Check another
+			 * student details Enter grades for this student
+			 */
 			System.out.println("Enter Student ID: ");
 			String sid = in.nextLine();
 			opt = "y";
@@ -47,10 +50,22 @@ public class Homepage {
 				getStud(in, sid);
 			break;
 
+		case 3:
+
+			while (opt.toLowerCase().equals("y"))
+				viewOrAdd(in);
+
+			break;
+
 		default:
 			System.out.println("Invalid Option");
 			break;
 		}
+
+	}
+
+	private static void viewOrAdd(Scanner in) {
+		// TODO Auto-generated method stub
 
 	}
 
