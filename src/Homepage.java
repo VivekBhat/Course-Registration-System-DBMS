@@ -30,53 +30,70 @@ public class Homepage {
 		int option = in.nextInt();
 		in.nextLine();
 		String opt = "y";
+		boolean switchOption = true;
+		while (switchOption) {
+			switch (option) {
+			case 1:
+				opt = "y";
 
-		switch (option) {
-		case 1:
-			opt = "y";
+				while (opt.toLowerCase().equals("y")) {
+					opt = newStud(in, opt);
+				}
+				try {
+					Runtime.getRuntime().exec("clear");
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				switchOption = false;
+				break;
 
-			while (opt.toLowerCase().equals("y")) {
-				opt = newStud(in, opt);
+			case 2:
+				/*
+				 * Task: After Showing details. Provide 2 options Check another
+				 * student details Enter grades for this student
+				 */
+
+				System.out.println("Enter Student ID: ");
+				sid = in.nextLine();
+				opt = "y";
+
+				while (opt.toLowerCase().equals("y"))
+					getStud(in, sid);
+				switchOption = false;
+				break;
+
+			case 3:
+				System.out.println("View/Add Courses");
+
+				System.out.println("Enter Student ID: ");
+				sid = in.nextLine();
+
+				opt = "y";
+				while (opt.toLowerCase().equals("y"))
+					viewOrAdd(in, sid);
+				switchOption = false;
+				break;
+
+			case 4:
+				System.out.println("View/Add Course Offering");
+
+				System.out.println("Enter Student ID: ");
+				sid = in.nextLine();
+
+				opt = "y";
+				while (opt.toLowerCase().equals("y"))
+					viewOrAdd(in, sid);
+
+				switchOption = false;
+				break;
+
+			default:
+				System.out.println("Invalid Option");
+				break;
 			}
-			try {
-				Runtime.getRuntime().exec("clear");
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
 
-			break;
-
-		case 2:
-			/*
-			 * Task: After Showing details. Provide 2 options Check another
-			 * student details Enter grades for this student
-			 */
-
-			System.out.println("Enter Student ID: ");
-			sid = in.nextLine();
-			opt = "y";
-
-			while (opt.toLowerCase().equals("y"))
-				getStud(in, sid);
-			break;
-
-		case 3:
-
-			System.out.println("Enter Student ID: ");
-			sid = in.nextLine();
-
-			opt = "y";
-			while (opt.toLowerCase().equals("y"))
-				viewOrAdd(in, sid);
-
-			break;
-
-		default:
-			System.out.println("Invalid Option");
-			break;
 		}
-
 	}
 
 	private static void viewOrAdd(Scanner in, String sid) {
