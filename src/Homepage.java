@@ -87,11 +87,13 @@ public class Homepage {
 
 					while (rs.next()) {
 						String course_id = rs.getString("COURSE_ID");
-                                                String title = rs.getString("TITLE");
-                                                String class_level = rs.getString("CLASS_LEVEL");
-                                                String department = rs.getString("DEPARTMENT");
-                                                System.out.println(String.format("%-10s\t%-40s\t%-20s ",course_id,title,department));
-						//System.out.println(course_id + "\t\t"+title+"\t\t"+class_level+"\t\t"+department);
+						String title = rs.getString("TITLE");
+						String class_level = rs.getString("CLASS_LEVEL");
+						String department = rs.getString("DEPARTMENT");
+						System.out.println(
+								String.format("| %-5s\t | \t %-35s\t | \t %-5s |", course_id, title, department));
+						// System.out.println(course_id +
+						// "\t\t"+title+"\t\t"+class_level+"\t\t"+department);
 					}
 
 				} catch (SQLException e) {
