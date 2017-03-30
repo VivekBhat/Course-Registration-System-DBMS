@@ -10,21 +10,18 @@ import java.sql.DriverManager;
 
 /**
  *
- * @author Vivek Bhat
+ * @author Vivek
  */
 public class JDBC_Connection {
-	
-	Creds obj = new Creds();
-	
 	static final String jdbcURL = "jdbc:oracle:thin:@orca.csc.ncsu.edu:1521:orcl01";
-	private String user_name = obj.userName;
-	private String password = obj.password;
+	private static String user_name = Creds.userName;
+	private static String password = Creds.password;
 
 	private JDBC_Connection() {
 
 	}
 
-	public Connection makeConnection() {
+	public static Connection makeConnection() {
 		Connection conn = null;
 		try {
 
@@ -32,12 +29,16 @@ public class JDBC_Connection {
 
 			try {
 
-				conn = DriverManager.getConnection(jdbcURL, this.user_name, this.password);
+				conn = DriverManager.getConnection(jdbcURL, user_name, password);
 
-			} finally {
-
-				close(conn);
+			} catch (Exception e) {
+				// TODO: handle exception
+				e.printStackTrace();
 			}
+			// finally {
+			//
+			// close(conn);
+			// }
 		} catch (Throwable oops) {
 			oops.printStackTrace();
 		}
