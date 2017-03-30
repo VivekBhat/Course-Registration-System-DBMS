@@ -86,8 +86,12 @@ public class Homepage {
 					rs = stmt.executeQuery("SELECT * FROM COURSES");
 
 					while (rs.next()) {
-						String s = rs.getString("COURSE_ID");
-						System.out.println(s + "   ");
+						String course_id = rs.getString("COURSE_ID");
+                                                String title = rs.getString("TITLE");
+                                                String class_level = rs.getString("CLASS_LEVEL");
+                                                String department = rs.getString("DEPARTMENT");
+                                                System.out.println(String.format("%-10s\t%-40s\t%-20s ",course_id,title,department));
+						//System.out.println(course_id + "\t\t"+title+"\t\t"+class_level+"\t\t"+department);
 					}
 
 				} catch (SQLException e) {
