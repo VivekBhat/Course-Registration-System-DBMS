@@ -1,5 +1,9 @@
 import java.io.IOException;
+import java.sql.Connection;
 import java.sql.Date;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.Scanner;
 
 public class Homepage {
@@ -15,13 +19,16 @@ public class Homepage {
 		System.out.println("Enter password:");
 		String password = in.nextLine();
 
+		Connection conn = JDBC_Connection.makeConnection();
+		java.sql.Statement stmt = null;
+		ResultSet rs = null;
+
 		String sid;
+
 		Date dob;
+
 		System.out.println("Hello Admin");
-		//
-		// System.out.println("Username is: " + username);
-		// System.out.println("Password is: " + password);
-		// System.out.println();
+
 		boolean switchOption = true;
 
 		while (switchOption) {
@@ -72,7 +79,26 @@ public class Homepage {
 				System.out.println("View/Add Courses");
 
 				System.out.println("Enter Student ID: ");
-				sid = in.nextLine();
+				sid = "12";
+
+				try {
+					stmt = conn.createStatement();
+					rs = stmt.executeQuery("SELECT * FROM COURSES");
+
+					while (rs.next()) {
+						String s = rs.getString("COURSE_ID");
+						System.out.println(s + "   ");
+					}
+
+				} catch (SQLException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} finally {
+					close(conn);
+					close(stmt);
+					close(rs);
+
+				}
 
 				opt = "y";
 				while (opt.toLowerCase().equals("y"))
@@ -92,16 +118,58 @@ public class Homepage {
 					viewOrAdd(in, sid);
 
 				switchOption = goBackToMenuOption(in);
+				break;
+
+			case 5:
+				System.out.println("View Pending Requests");
+
+				// get pending requests from the table
+
+				System.out.println("ADMIN: Please select request number:");
+				String reqNo = in.nextLine();
+				System.out.println("Do you want to approve: ");
 
 				break;
 
 			default:
 				System.out.println("Invalid Option");
 				switchOption = goBackToMenuOption(in);
+				for (int i = 0; i < 50; i++) {
+					System.out.println();
+				}
+
 			}
 
 		}
 
+	}
+
+	static void close(Connection conn) {
+		if (conn != null) {
+			try {
+				conn.close();
+			} catch (Throwable whatever) {
+			}
+		}
+
+	}
+
+	static void close(Statement st) {
+		if (st != null) {
+			try {
+				st.close();
+			} catch (Throwable whatever) {
+			}
+		}
+	}
+
+	static void close(ResultSet rs) {
+		if (rs != null) {
+			try {
+				rs.close();
+			} catch (Throwable whatever) {
+			}
+		}
 	}
 
 	private static boolean goBackToMenuOption(Scanner in) {
