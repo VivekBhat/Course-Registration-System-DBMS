@@ -453,6 +453,73 @@ public class Homepage {
                 System.out.println(String.format("%-20s\t%-10s\t%-30s\t%-15s\n", course_name, grade, instr_name, session));
             }
         }
+        
+        public static void viewAllCurrentCourses() throws Exception {
+            query = "select c.title, i.instr_name, co.max_student, "
+                    + "sc.day, sc.day2, sc.start_time, sc.end_time, "
+                    + "sc.location "
+                    + "from COURSE_OFFERED co, instructor i, courses c, schedule sc "
+                    + "where co.session_id = ? and "
+                    + "co.course_id = c.course_id and "
+                    + "i.instr_id = co.instr_id and "
+                    + "co.schedule_id = sc.schedule_id";
+            preparedStatement = conn.prepareStatement(query);
+            preparedStatement.setString(1, CURR_SESSION);
+            rs = preparedStatement.executeQuery();
+            for(int i=0;i<170;i++)
+                System.out.print("_");
+            System.out.println("");
+            System.out.println(String.format("%-20s\t%-20s\t%-15s\t%-10s\t%-10s\t%-20s\t%-20s\t%-10s", 
+                        "Title","Instructor","Max-Students","Day 1","Day 2","Start Time","End Time","Location"));
+             for(int i=0;i<170;i++)
+                System.out.print("_");
+             System.out.println("");
+            while(rs.next())
+            {
+                String title = rs.getString("title");
+                String instr_name = rs.getString("instr_name");
+                String max_student = rs.getString("max_student");
+                String day = rs.getString("day");
+                String day2 = rs.getString("day2");
+                String start_time = rs.getString("start_time");
+                String end_time = rs.getString("end_time");
+                String loc = rs.getString("location");
+                System.out.println(String.format("%-20s\t%-20s\t%-15s\t%-10s\t%-10s\t%-20s\t%-20s\t%-10s\n", 
+                        title,instr_name,max_student,day,day2,start_time,end_time,loc));
+            }
+        }
+        
+        public static void displayGrades(int option, String student_id) throws Exception
+        {
+            if(option == 1)
+            {
+                query = "select e.course_id,e.grade "
+                        + "from enrollment e, student s "
+                        + "where s.STUDENT_ID=? and s.STUDENT_ID=e.STUDENT_ID";
+                preparedStatement = conn.prepareStatement(query);
+                preparedStatement.setString(1, student_id);
+                rs = preparedStatement.executeQuery();
+                System.out.println(String.format("%-10s\t%-7s\n","Course ID","Grade"));
+                while(rs.next())
+                {
+                    String course_id = rs.getString("course_id");
+                    String grade = rs.getString("grade");
+                    System.out.println(String.format("%-10s\t%-7s\n",course_id,grade));
+                }
+            }
+            else if(option == 2)
+            {
+                query = "select GPA from student where student_id=?";
+                preparedStatement = conn.prepareStatement(query);
+                preparedStatement.setString(1, student_id);
+                rs = preparedStatement.executeQuery();
+                System.out.println("Current GPA: "+rs.getFloat("gpa"));
+            }
+            else
+            {
+                System.out.println("Invalid Option");
+            }
+        }
 
 	public static void welcomeAdmin(String adminName) {
 		System.out.println("***************************************");
@@ -534,7 +601,7 @@ public class Homepage {
                         break;
                         
                     case 2:
-                        
+                        viewAllCurrentCourses();
                         break;
                         
                     case 3:
