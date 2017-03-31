@@ -25,6 +25,7 @@ public class Homepage {
 		System.out.println("Enter password:");
 		String password = in.next();
 		String name = "";
+                String stu_id="";
 		boolean admin = false;
 		query = "Select * from ADMINISTRATOR WHERE USERNAME=? and PASSWORD=?";
 		try {
@@ -45,15 +46,16 @@ public class Homepage {
 				if (rs.next()) {
 					admin = false;
 					name = rs.getString("F_NAME") + " " + rs.getString("L_NAME");
+                                        stu_id = rs.getString("student_id");
 				} else {
 					System.out.println("Invalid Username or Password Try Again");
 					loginUser();
 				}
 			}
 			if (admin)
-				welcomeAdmin(name);
+                            welcomeAdmin(name);
 			else
-				System.out.println("Welcome Student");
+                            welcomeStudent(name, stu_id);
 			// else
 			// student home page
 
@@ -395,6 +397,25 @@ public class Homepage {
 		}
 	
 	}
+        
+        public static void viewStudentProfile(String student_id) throws Exception
+        {
+            query = "select f_name,L_NAME,GPA,EMAIL,DEPARTMENT from student where student_id=?";
+            preparedStatement = conn.prepareStatement(query);
+            preparedStatement.setString(1, student_id);
+            rs = preparedStatement.executeQuery();
+            System.out.println("***************************************");
+            if(rs.next())
+            {
+                System.out.println("Name: "+rs.getString("f_name")+" "+rs.getString("l_name"));
+                System.out.println("GPA: "+rs.getFloat("gpa")+"");
+                System.out.println("Email: "+rs.getString("email"));
+                //System.out.println("Address: "+rs.getString("Address"));
+                System.out.println("Department: "+rs.getString("department"));
+            }
+            System.out.println("***************************************");
+            
+        }
 
 	public static void welcomeAdmin(String adminName) {
 		System.out.println("***************************************");
@@ -456,7 +477,7 @@ public class Homepage {
 		}
 	}
         
-        public static void welcomeStudent(String studentName) {
+        public static void welcomeStudent(String studentName, String student_id) throws Exception{
             	System.out.println("***************************************");
 		System.out.println("Welcome " + studentName);
 		System.out.println("***************************************");
@@ -468,6 +489,36 @@ public class Homepage {
 		System.out.println("5 View Pending Courses");
 		System.out.println("6 View Grades");
 		System.out.println("7 View/Pay Bill\n\n");
+                int input = in.nextInt();
+                switch(input)
+                {
+                    case 1:
+                        viewStudentProfile(student_id);
+                        break;
+                        
+                    case 2:
+                        break;
+                        
+                    case 3:
+                        break;
+                        
+                    case 4:
+                        break;
+                        
+                    case 5:
+                        break;
+                        
+                    case 6:
+                        break;
+                        
+                    case 7:
+                        break;
+                        
+                    case 8:
+                        break;
+                    default:
+                        
+                }
         }
 
 	public static void main(String[] args) {
