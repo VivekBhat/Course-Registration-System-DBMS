@@ -51,12 +51,6 @@ public class Homepage {
 				while (opt.toLowerCase().equals("y")) {
 					opt = newStud(in, opt);
 				}
-				try {
-					Runtime.getRuntime().exec("clear");
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
 
 				switchOption = goBackToMenuOption(in);
 
