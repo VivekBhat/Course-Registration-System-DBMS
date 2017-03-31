@@ -91,6 +91,7 @@ public class Homepage {
         String l_name = in.nextLine();
         System.out.print("GPA: ");
         float gpa = in.nextFloat();
+        in.nextLine();
         System.out.print("Email ID: ");
         String email = in.nextLine();
         System.out.print("Password: ");
@@ -102,7 +103,9 @@ public class Homepage {
         System.out.print("Department: ");
         String dept = in.nextLine();
         System.out.print("Date of Birth(yyyy-dd-mm): ");
-        Date dob = Date.valueOf(in.nextLine());
+        String date = in.nextLine();
+        Date dob = Date.valueOf(date);
+        System.out.println(dob);
         query = "insert into STUDENT(STUDENT_ID,F_NAME, l_name, gpa, email, password, "
                 + "current_credits,residency, class_level, department, "
                 + "pending_bill) values (?,?,?,?,?,?,?,?,?,?,?)";
@@ -114,9 +117,10 @@ public class Homepage {
         preparedStatement.setString(5, email);
         preparedStatement.setString(6, password);
         preparedStatement.setInt(7, 0);
-        preparedStatement.setString(9, residency);
-        preparedStatement.setString(10, class_level);
-        preparedStatement.setString(11, dept);
+        preparedStatement.setString(8, residency);
+        preparedStatement.setString(9, class_level);
+        preparedStatement.setString(10, dept);
+        preparedStatement.setInt(11, 0);
         if(preparedStatement.executeUpdate()==1)
         {
             System.out.println("Student Entered Successfully");
