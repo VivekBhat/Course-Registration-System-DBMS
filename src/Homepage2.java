@@ -132,9 +132,32 @@ public class Homepage {
         
     }
     
-    public static void viewStudent()
+    public static void viewStudent() throws Exception
     {
-        
+        System.out.println("*********************");
+        System.out.println("Search Student");
+        System.out.println("*********************");
+        System.out.print("Enter Student ID: ");
+        String stu_id = in.nextLine();
+        query =   "SELECT s.f_name, s.l_name, s.DOB, s.EMAIL,e.course_id,e.grade "
+                + "FROM enrollment e, student s "
+                + "WHERE s.STUDENT_ID=? and s.STUDENT_ID=e.STUDENT_ID";
+        preparedStatement = conn.prepareStatement(query);
+        preparedStatement.setString(1, stu_id);
+        rs = preparedStatement.executeQuery();
+        if(rs.next())
+        {
+            String name = rs.getString("f_name")+" "+rs.getString("l_name");
+            String email = rs.getString("email");
+            String dob = rs.getDate("dob").toString();
+            String course_id = rs.getString("course_id");
+            String grade = rs.getString("grade");
+            System.out.println(String.format("%-20s\t%-20s\t%-15s\t%-6s\t%-5s", name,email,dob,course_id,grade));
+        }
+        else
+        {
+            System.out.println("No Such Student Exists");
+        }
     }
     
     public static void welcomeAdmin(String adminName)
@@ -155,6 +178,16 @@ public class Homepage {
                 try 
                 {
                     enterNewStudent();
+                } 
+                catch (Exception e) 
+                {
+                    e.printStackTrace();
+                }
+                break;
+            case 2:
+                try 
+                {
+                    viewStudent();
                 } 
                 catch (Exception e) 
                 {
