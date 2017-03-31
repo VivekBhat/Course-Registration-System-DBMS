@@ -12,7 +12,7 @@ public class Homepage {
 	public static ResultSet rs;
 	public static PreparedStatement preparedStatement;
 	public static String query;
-	public static final String CURR_SESSION = "Spring 2017";
+        public static final String CURR_SESSION = "Spring 2017";
 
 	public static void printWelcome() {
 		System.out.println("***************************************");
@@ -26,7 +26,7 @@ public class Homepage {
 		System.out.println("Enter password:");
 		String password = in.next();
 		String name = "";
-		String stu_id = "";
+                String stu_id="";
 		boolean admin = false;
 		query = "Select * from ADMINISTRATOR WHERE USERNAME=? and PASSWORD=?";
 		try {
@@ -46,19 +46,17 @@ public class Homepage {
 
 				if (rs.next()) {
 					admin = false;
-					name = rs.getString("F_NAME") + " "
-							+ rs.getString("L_NAME");
-					stu_id = rs.getString("student_id");
+					name = rs.getString("F_NAME") + " " + rs.getString("L_NAME");
+                                        stu_id = rs.getString("student_id");
 				} else {
-					System.out
-							.println("Invalid Username or Password Try Again");
+					System.out.println("Invalid Username or Password Try Again");
 					loginUser();
 				}
 			}
 			if (admin)
-				welcomeAdmin(name);
+                            welcomeAdmin(name);
 			else
-				welcomeStudent(name, stu_id);
+                            welcomeStudent(name, stu_id);
 			// else
 			// student home page
 
@@ -130,8 +128,7 @@ public class Homepage {
 		System.out.println("*********************");
 		System.out.print("Enter Student ID: ");
 		String stu_id = in.next();
-		query = "SELECT s.f_name, s.l_name, s.DOB, s.EMAIL,e.course_id,e.grade "
-				+ "FROM enrollment e, student s "
+		query = "SELECT s.f_name, s.l_name, s.DOB, s.EMAIL,e.course_id,e.grade " + "FROM enrollment e, student s "
 				+ "WHERE s.STUDENT_ID=? and s.STUDENT_ID=e.STUDENT_ID";
 		preparedStatement = conn.prepareStatement(query);
 		preparedStatement.setString(1, stu_id);
@@ -142,58 +139,57 @@ public class Homepage {
 			String dob = rs.getDate("dob").toString();
 			String course_id = rs.getString("course_id");
 			String grade = rs.getString("grade");
-			System.out.println(String.format("%-20s\t%-20s\t%-15s\t%-6s\t%-5s",
-					name, email, dob, course_id, grade));
-			System.out.println("Press 1 to Enter Grdaes for " + name
-					+ "\nPress 0 to exit");
-			int input = in.nextInt();
-			if (input == 0)
-				viewStudent();
-			else if (input == 1)
-				enterGrades(stu_id);
-			else {
-				System.out.println("Invalid option");
-				viewStudent();
-			}
-
+			System.out.println(String.format("%-20s\t%-20s\t%-15s\t%-6s\t%-5s", name, email, dob, course_id, grade));
+                        System.out.println("Press 1 to Enter Grdaes for "+name+"\nPress 0 to exit");
+                        int input = in.nextInt();
+                        if(input==0)
+                            viewStudent();
+                        else if(input ==1)
+                            enterGrades(stu_id);
+                        else
+                        {
+                            System.out.println("Invalid option");
+                            viewStudent();
+                        }
+                        
 		} else {
 			System.out.println("No Such Student Exists");
 		}
 	}
-
-	public static void enterGrades(String studentId) throws Exception {
-		query = "SELECT e.course_id,e.grade " + "FROM enrollment e "
-				+ "WHERE e.STUDENT_ID = " + studentId;
-		preparedStatement = conn.prepareStatement(query);
-		rs = preparedStatement.executeQuery();
-		int num = 1;
-		while (rs.next()) {
-			String course_id = rs.getString("course_id");
-			String grade = rs.getString("grade");
-			System.out.println(String.format("%-2s\t%-6s\t%-30s\t", num++ + "",
-					course_id, grade));
-		}
-		String grades[] = { "A+", "A", "A-", "B+", "B", "B-", "C+", "C", "C-" };
-		System.out.println("Enter Course ID for which you want to add Grades");
-		String c_id = in.next();
-		System.out.println("Select Grade for this Course");
-		System.out.println(String.format(
-				"%-5s\t%-5s\t%-5s\n%-5s\t%-5s\t%-5s\n%-5s\t%-5s\t%-5s\n",
-				"1.A+", "2.A", "3.A-", "4.B+", "5.B", "6.B-", "7.C+", "8.C",
-				"9.C-"));
-		int grade = in.nextInt();
-		query = "update enrollment set grade=? where STUDENT_ID=? and COURSE_ID=?";
-		preparedStatement = conn.prepareCall(query);
-		preparedStatement.setString(1, grades[grade - 1]);
-		preparedStatement.setString(2, studentId);
-		preparedStatement.setString(3, c_id);
-		if (preparedStatement.executeUpdate() == 1)
-			System.out.println("Grades Entered");
-		else
-			System.out.println("Error Entering Grades. Please Try Again");
-		viewStudent();
-
-	}
+        
+        public static void enterGrades(String studentId) throws Exception {
+            query = "SELECT e.course_id,e.grade " + 
+                    "FROM enrollment e "
+                    + "WHERE e.STUDENT_ID = "+studentId;
+            preparedStatement = conn.prepareStatement(query);
+            rs = preparedStatement.executeQuery();
+            int num =1;
+            while(rs.next())
+            {
+                String course_id = rs.getString("course_id");
+		String grade = rs.getString("grade");
+                System.out.println(String.format("%-2s\t%-6s\t%-30s\t",num+++"", course_id,grade));
+            }
+            String grades[] = {"A+","A","A-","B+","B","B-","C+","C","C-"};
+            System.out.println("Enter Course ID for which you want to add Grades");
+            String c_id = in.next();
+            System.out.println("Select Grade for this Course");
+            System.out.println(String.format("%-5s\t%-5s\t%-5s\n%-5s\t%-5s\t%-5s\n%-5s\t%-5s\t%-5s\n","1.A+","2.A","3.A-",
+                                                                                                      "4.B+","5.B","6.B-",
+                                                                                                      "7.C+","8.C","9.C-"));
+            int grade = in.nextInt();
+            query = "update enrollment set grade=? where STUDENT_ID=? and COURSE_ID=?";
+            preparedStatement = conn.prepareCall(query);
+            preparedStatement.setString(1, grades[grade-1]);
+            preparedStatement.setString(2, studentId);
+            preparedStatement.setString(3, c_id);
+            if(preparedStatement.executeUpdate()==1)
+                System.out.println("Grades Entered");
+            else
+                System.out.println("Error Entering Grades. Please Try Again");
+            viewStudent();
+            
+        }
 
 	private static String getClassificationLevel() {
 		System.out.println("Enter\n 1 for Undergraduate \n 2 for Graduate");
@@ -216,8 +212,7 @@ public class Homepage {
 	}
 
 	private static String getResidency() {
-		System.out
-				.println("Enter\n 1 for in-state\n 2 for out-state\n 3 for international");
+		System.out.println("Enter\n 1 for in-state\n 2 for out-state\n 3 for international");
 		int opt = in.nextInt();
 		String residency = "in-state";
 		switch (opt) {
@@ -236,7 +231,7 @@ public class Homepage {
 
 		return residency;
 	}
-
+        
 	/*
 	 * 03/30/2017 jkumar3 - Jitin Kumar This method shall be used by
 	 * administrator to view all courses
@@ -621,123 +616,183 @@ public class Homepage {
 		else
 			return null;
 	}
-
-	public static void viewStudentProfile(String student_id) throws Exception {
-		query = "select f_name,L_NAME,GPA,EMAIL,DEPARTMENT from student where student_id=?";
-		preparedStatement = conn.prepareStatement(query);
-		preparedStatement.setString(1, student_id);
-		rs = preparedStatement.executeQuery();
-		System.out.println("***************************************");
-		if (rs.next()) {
-			System.out.println("Name: " + rs.getString("f_name") + " "
-					+ rs.getString("l_name"));
-			System.out.println("GPA: " + rs.getFloat("gpa") + "");
-			System.out.println("Email: " + rs.getString("email"));
-			// System.out.println("Address: "+rs.getString("Address"));
-			System.out.println("Department: " + rs.getString("department"));
-		}
-		System.out.println("***************************************");
-
-	}
-
-	public static void viewMyCourses(String student_id) throws Exception {
-
-		query = "SELECT c.title,e.grade,i.instr_name, e.session_id "
-				+ "FROM enrollment e,student s, courses c, instructor i "
-				+ "WHERE s.STUDENT_ID=? " + "and s.STUDENT_ID=e.STUDENT_ID "
-				+ "and e.status = 'Enrolled' "
-				+ "and c.course_id = e.course_id "
-				+ "and i.instr_id = e.instr_id";
-		preparedStatement = conn.prepareStatement(query);
-		preparedStatement.setString(1, student_id);
-		rs = preparedStatement.executeQuery();
-
-		// Formatting Output
-		for (int i = 0; i < 99; i++)
-			System.out.print("_");
-		System.out.println("");
-		System.out.println(String.format("%-20s\t%-10s\t%-30s\t%-15s",
-				"Course Name", "Grade", "Instructor Name", "Session"));
-		for (int i = 0; i < 99; i++)
-			System.out.print("_");
-		System.out.println("");
-		// Formatting Ends here
-
-		while (rs.next()) {
-			String course_name = rs.getString("title");
-			String grade = rs.getString("grade");
-			String instr_name = rs.getString("instr_name");
-			String session = rs.getString("session_id");
-			System.out.println(String.format("%-20s\t%-10s\t%-30s\t%-15s\n",
-					course_name, grade, instr_name, session));
-		}
-	}
-
-	public static void viewAllCurrentCourses() throws Exception {
-		query = "select c.title, i.instr_name, co.max_student, "
-				+ "sc.day, sc.day2, sc.start_time, sc.end_time, "
-				+ "sc.location "
-				+ "from COURSE_OFFERED co, instructor i, courses c, schedule sc "
-				+ "where co.session_id = ? and "
-				+ "co.course_id = c.course_id and "
-				+ "i.instr_id = co.instr_id and "
-				+ "co.schedule_id = sc.schedule_id";
-		preparedStatement = conn.prepareStatement(query);
-		preparedStatement.setString(1, CURR_SESSION);
-		rs = preparedStatement.executeQuery();
-		for (int i = 0; i < 170; i++)
-			System.out.print("_");
-		System.out.println("");
-		System.out.println(String.format(
-				"%-20s\t%-20s\t%-15s\t%-10s\t%-10s\t%-20s\t%-20s\t%-10s",
-				"Title", "Instructor", "Max-Students", "Day 1", "Day 2",
-				"Start Time", "End Time", "Location"));
-		for (int i = 0; i < 170; i++)
-			System.out.print("_");
-		System.out.println("");
-		while (rs.next()) {
-			String title = rs.getString("title");
-			String instr_name = rs.getString("instr_name");
-			String max_student = rs.getString("max_student");
-			String day = rs.getString("day");
-			String day2 = rs.getString("day2");
-			String start_time = rs.getString("start_time");
-			String end_time = rs.getString("end_time");
-			String loc = rs.getString("location");
-			System.out.println(String.format(
-					"%-20s\t%-20s\t%-15s\t%-10s\t%-10s\t%-20s\t%-20s\t%-10s\n",
-					title, instr_name, max_student, day, day2, start_time,
-					end_time, loc));
-		}
-	}
-
-	public static void displayGrades(int option, String student_id)
-			throws Exception {
-		if (option == 1) {
-			query = "select e.course_id,e.grade "
-					+ "from enrollment e, student s "
-					+ "where s.STUDENT_ID=? and s.STUDENT_ID=e.STUDENT_ID";
-			preparedStatement = conn.prepareStatement(query);
-			preparedStatement.setString(1, student_id);
-			rs = preparedStatement.executeQuery();
-			System.out.println(String.format("%-10s\t%-7s\n", "Course ID",
-					"Grade"));
-			while (rs.next()) {
-				String course_id = rs.getString("course_id");
-				String grade = rs.getString("grade");
-				System.out.println(String.format("%-10s\t%-7s\n", course_id,
-						grade));
-			}
-		} else if (option == 2) {
-			query = "select GPA from student where student_id=?";
-			preparedStatement = conn.prepareStatement(query);
-			preparedStatement.setString(1, student_id);
-			rs = preparedStatement.executeQuery();
-			System.out.println("Current GPA: " + rs.getFloat("gpa"));
-		} else {
-			System.out.println("Invalid Option");
-		}
-	}
+        
+        public static void viewStudentProfile(String student_id) throws Exception {
+            query = "select f_name,L_NAME,GPA,EMAIL,DEPARTMENT from student where student_id=?";
+            preparedStatement = conn.prepareStatement(query);
+            preparedStatement.setString(1, student_id);
+            rs = preparedStatement.executeQuery();
+            System.out.println("***************************************");
+            if(rs.next())
+            {
+                System.out.println("Name: "+rs.getString("f_name")+" "+rs.getString("l_name"));
+                System.out.println("GPA: "+rs.getFloat("gpa")+"");
+                System.out.println("Email: "+rs.getString("email"));
+                //System.out.println("Address: "+rs.getString("Address"));
+                System.out.println("Department: "+rs.getString("department"));
+            }
+            System.out.println("***************************************");
+            
+        }
+        
+        public static void viewMyCourses(String student_id) throws Exception {
+            
+            query = "SELECT c.title,e.grade,i.instr_name, e.session_id "
+                    + "FROM enrollment e,student s, courses c, instructor i "
+                    + "WHERE s.STUDENT_ID=? "
+                    + "and s.STUDENT_ID=e.STUDENT_ID "
+                    + "and e.status = 'Enrolled' "
+                    + "and c.course_id = e.course_id "
+                    + "and i.instr_id = e.instr_id";
+            preparedStatement = conn.prepareStatement(query);
+            preparedStatement.setString(1, student_id);
+            rs = preparedStatement.executeQuery();
+            
+            //Formatting Output
+            for(int i=0;i<99;i++)
+                System.out.print("_");
+            System.out.println("");
+            System.out.println(String.format("%-20s\t%-10s\t%-30s\t%-15s", "Course Name",
+                                                                           "Grade", 
+                                                                           "Instructor Name", 
+                                                                           "Session"));
+            for(int i=0;i<99;i++)
+                System.out.print("_");
+            System.out.println("");
+            //Formatting Ends here
+            
+            
+            while(rs.next())
+            {
+                String course_name = rs.getString("title");
+                String grade = rs.getString("grade");
+                String instr_name = rs.getString("instr_name");
+                String session = rs.getString("session_id");
+                System.out.println(String.format("%-20s\t%-10s\t%-30s\t%-15s\n", course_name, grade, instr_name, session));
+            }
+        }
+        
+        public static void viewAllCurrentCourses() throws Exception {
+            query = "select c.title, i.instr_name, co.max_student, "
+                    + "sc.day, sc.day2, sc.start_time, sc.end_time, "
+                    + "sc.location "
+                    + "from COURSE_OFFERED co, instructor i, courses c, schedule sc "
+                    + "where co.session_id = ? and "
+                    + "co.course_id = c.course_id and "
+                    + "i.instr_id = co.instr_id and "
+                    + "co.schedule_id = sc.schedule_id";
+            preparedStatement = conn.prepareStatement(query);
+            preparedStatement.setString(1, CURR_SESSION);
+            rs = preparedStatement.executeQuery();
+            for(int i=0;i<170;i++)
+                System.out.print("_");
+            System.out.println("");
+            System.out.println(String.format("%-20s\t%-20s\t%-15s\t%-10s\t%-10s\t%-20s\t%-20s\t%-10s", 
+                        "Title","Instructor","Max-Students","Day 1","Day 2","Start Time","End Time","Location"));
+             for(int i=0;i<170;i++)
+                System.out.print("_");
+             System.out.println("");
+            while(rs.next())
+            {
+                String title = rs.getString("title");
+                String instr_name = rs.getString("instr_name");
+                String max_student = rs.getString("max_student");
+                String day = rs.getString("day");
+                String day2 = rs.getString("day2");
+                String start_time = rs.getString("start_time");
+                String end_time = rs.getString("end_time");
+                String loc = rs.getString("location");
+                System.out.println(String.format("%-20s\t%-20s\t%-15s\t%-10s\t%-10s\t%-20s\t%-20s\t%-10s\n", 
+                        title,instr_name,max_student,day,day2,start_time,end_time,loc));
+            }
+        }
+        
+        public static void displayGrades(int option, String student_id) throws Exception {
+            if(option == 1)
+            {
+                query = "select e.course_id,e.grade "
+                        + "from enrollment e, student s "
+                        + "where s.STUDENT_ID=? and s.STUDENT_ID=e.STUDENT_ID";
+                preparedStatement = conn.prepareStatement(query);
+                preparedStatement.setString(1, student_id);
+                rs = preparedStatement.executeQuery();
+                System.out.println(String.format("\n%-10s\t%-7s","Course ID","Grade"));
+                while(rs.next())
+                {
+                    String course_id = rs.getString("course_id");
+                    String grade = rs.getString("grade");
+                    System.out.println(String.format("%-10s\t%-7s\n",course_id,grade));
+                }
+            }
+            else if(option == 2)
+            {
+                query = "select GPA from student where student_id=?";
+                preparedStatement = conn.prepareStatement(query);
+                preparedStatement.setString(1, student_id);
+                rs = preparedStatement.executeQuery();
+                if(rs.next())
+                System.out.println("Current GPA: "+rs.getFloat("gpa"));
+            }
+            else
+            {
+                System.out.println("Invalid Option");
+            }
+        }
+        
+        public static void viewBill(String student_id) throws Exception {
+            query = "select pending_bill from student where student_id =?";
+            preparedStatement = conn.prepareStatement(query);
+            preparedStatement.setString(1, student_id);
+            rs = preparedStatement.executeQuery();
+            rs.next();
+            int amt = rs.getInt("pending_bill");
+            System.out.println("Pending Bill: "+amt);
+            if(amt>0)
+            {
+                System.out.println("Press 1 to pay bill");
+                int inp = in.nextInt();
+                if(inp == 1)
+                {
+                    System.out.println("Enter Amount");
+                    int pay_amt = in.nextInt();
+                    if(pay_amt<=amt)
+                    {
+                        amt = amt-pay_amt;
+                        query = "update student set pending_bill=? where STUDENT_ID=?";
+                        preparedStatement = conn.prepareStatement(query);
+                        preparedStatement.setInt(1, amt);
+                        preparedStatement.setString(2, student_id);
+                        if(preparedStatement.executeUpdate()==1)
+                            System.out.println("Payment Successfull");
+                        else
+                        {
+                            System.out.println("Payment Error");
+                            viewBill(student_id);
+                        }
+                    }
+                    else
+                    {
+                        System.out.println("Invalid Amount Entered");
+                        viewBill(student_id);
+                    }
+                }
+            }
+            
+        }
+        
+        public static void viewPendingCourses(String student_id) throws Exception {
+            query = "SELECT * FROM PENDING_PERMISSIONS WHERE STUDENT_ID = ? and PERMISSION = 'Pending' OR PERMISSION = 'Rejected'";
+            preparedStatement = conn.prepareStatement(query);
+            preparedStatement.setString(1, student_id);
+            rs = preparedStatement.executeQuery();
+            System.out.println(String.format("\n%-10s\t%-15s","Course ID","Status"));
+            while(rs.next())
+            {
+                String course_id = rs.getString("course_id");
+                String status = rs.getString("permission");
+                System.out.println(String.format("%-10s\t%-7s\n",course_id,status));
+            }
+        }
 
 	public static void welcomeAdmin(String adminName) {
 		System.out.println("***************************************");
@@ -751,46 +806,51 @@ public class Homepage {
 		int option = in.nextInt();
 		switch (option) {
 		case 1:
-			try {
-				enterNewStudent();
-			} catch (Exception e) {
-				e.printStackTrace();
+			try 
+                        {
+                            enterNewStudent();
+			} catch (Exception e) 
+                        {
+                            e.printStackTrace();
 			}
 			break;
 		case 2:
-			try {
-				viewStudent();
-			} catch (Exception e) {
-				e.printStackTrace();
+                        try 
+                        {
+                            viewStudent();
+			} catch (Exception e) 
+                        {
+                            e.printStackTrace();
 			}
 			break;
-		case 3:
-			try {
-				System.out.println("Press 1 to View All Courses");
-				System.out.println("Press 2 to Search a Course by Course ID");
-				System.out.println("Press 3 to Add a new Course");
-				int choice = in.nextInt();
-				switch (choice) {
-				case 1:
-					viewCourses();
-					break;
-				case 2:
-					viewCoursesById();
-					break;
-				case 3:
-					addCourse();
-					break;
-				default:
-					System.out.println("Please Enter a valid choice");
-					welcomeAdmin(adminName);
-				}
-			} catch (Exception e) {
-				System.out.println("Error - Please Enter a valid choice!");
-				welcomeAdmin(adminName);
-			}
-			break;
-
-		case 4:
+                case 3:
+                        try 
+                        {
+                            System.out.println("Press 1 to View All Courses");
+                            System.out.println("Press 2 to Search a Course by Course ID");
+                            System.out.println("Press 3 to Add a new Course");
+                            int choice = in.nextInt();
+                            switch(choice)
+                            {
+                                case 1: 
+                                    viewCourses();
+                                    break;
+                                case 2:
+                                    viewCoursesById();
+                                    break;
+                                case 3:
+                                    addCourse();
+                                    break;
+                                default:
+                                    System.out.println("Please Enter a valid choice");
+                                    welcomeAdmin(adminName);
+                            }
+                        } 
+                        catch (Exception e) 
+                        {
+                            
+                        }
+                case 4:
 			try {
 				System.out.println("Press 1 to View Course offering");
 				System.out.println("Press 2 to Add Course Offering");
@@ -811,56 +871,61 @@ public class Homepage {
 				welcomeAdmin(adminName);
 			}
 			break;
-
 		default:
 		}
 	}
-
-	public static void welcomeStudent(String studentName, String student_id)
-			throws Exception {
-		System.out.println("***************************************");
+        
+        public static void welcomeStudent(String studentName, String student_id) throws Exception {
+            	System.out.println("***************************************");
 		System.out.println("Welcome " + studentName);
 		System.out.println("***************************************");
 		System.out.println("Please choose an option:");
 		System.out.println("1 View Profile");
-		System.out.println("2 View All Courses");
-		System.out.println("3 Enroll Courses");
-		System.out.println("4 View My Courses");
+                System.out.println("2 View All Courses");
+                System.out.println("3 Enroll Courses");
+                System.out.println("4 View My Courses");
 		System.out.println("5 View Pending Courses");
 		System.out.println("6 View Grades");
 		System.out.println("7 View/Pay Bill\n\n");
-		int input = in.nextInt();
-		switch (input) {
-		case 1:
-			viewStudentProfile(student_id);
-			break;
-
-		case 2:
-			viewAllCurrentCourses();
-			break;
-
-		case 3:
-			break;
-
-		case 4:
-			viewMyCourses(student_id);
-			break;
-
-		case 5:
-			break;
-
-		case 6:
-			break;
-
-		case 7:
-			break;
-
-		case 8:
-			break;
-		default:
-
-		}
-	}
+                int input = in.nextInt();
+                switch(input)
+                {
+                    case 1:
+                        viewStudentProfile(student_id);
+                        break;
+                        
+                    case 2:
+                        viewAllCurrentCourses();
+                        break;
+                        
+                    case 3:
+                        break;
+                        
+                    case 4:
+                        viewMyCourses(student_id);
+                        break;
+                        
+                    case 5:
+                        viewPendingCourses(student_id);
+                        break;
+                        
+                    case 6:
+                        System.out.println("Press 1 to View Letter Grades");
+                        System.out.println("Press 2 to View GPA");
+                        int opt = in.nextInt();
+                        displayGrades(opt, student_id);
+                        break;
+                        
+                    case 7:
+                        viewBill(student_id);
+                        break;
+                        
+                    case 8:
+                        break;
+                    default:
+                        
+                }
+        }
 
 	public static void main(String[] args) {
 		printWelcome();
