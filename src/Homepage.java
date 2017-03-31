@@ -1,12 +1,15 @@
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.Date;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Scanner;
 
 public class Homepage {
+
+	public static PreparedStatement stmt;
 
 	public static void main(String[] args) {
 		Scanner in = new Scanner(System.in);
@@ -20,7 +23,7 @@ public class Homepage {
 		String password = in.nextLine();
 
 		Connection conn = JDBC_Connection.makeConnection();
-		java.sql.Statement stmt = null;
+		// java.sql.Statement stmt = null;
 		ResultSet rs = null;
 
 		String sid;
@@ -77,38 +80,77 @@ public class Homepage {
 
 			case 3:
 				System.out.println("View/Add Courses");
+				System.out.println("****************\n");
+				System.out.println("Press 1 to view all courses");
+				System.out.println("Press 2 to view course by Course ID");
+				System.out.println("Press 3 to Add Course:");
+				int i = in.nextInt();
+				in.nextLine();
 
-				System.out.println("Enter Student ID: ");
-				sid = "12";
+				switch (i) {
 
-				try {
-					stmt = conn.createStatement();
-					rs = stmt.executeQuery("SELECT * FROM COURSES");
+				case 1:
+					System.out.println("Displaying all courses:\n");
+					try {
+						String selectAllCourses = "Select * from Courses";
+						stmt = conn.prepareStatement(selectAllCourses);
+						rs = stmt.executeQuery();
+						while (rs.next()) {
+							String course_id = rs.getString("COURSE_ID");
+							String title = rs.getString("TITLE");
+							String class_level = rs.getString("CLASS_LEVEL");
+							String department = rs.getString("DEPARTMENT");
+							System.out.println(
+									String.format("| %-5s\t | \t %-35s\t | \t %-5s |", course_id, title, department));
+							// System.out.println(course_id +
+							// "\t\t"+title+"\t\t"+class_level+"\t\t"+department);
+						}
 
-					while (rs.next()) {
-						String course_id = rs.getString("COURSE_ID");
-						String title = rs.getString("TITLE");
-						String class_level = rs.getString("CLASS_LEVEL");
-						String department = rs.getString("DEPARTMENT");
-						System.out.println(
-								String.format("| %-5s\t | \t %-35s\t | \t %-5s |", course_id, title, department));
-						// System.out.println(course_id +
-						// "\t\t"+title+"\t\t"+class_level+"\t\t"+department);
+					} catch (SQLException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					} finally {
+						close(conn);
+						close(stmt);
+						close(rs);
+
 					}
 
-				} catch (SQLException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} finally {
-					close(conn);
-					close(stmt);
-					close(rs);
+					break;
 
+				case 2:
+					System.out.println("Enter the COurses");
+					System.out.println("Displaying course by Course ID");
+
+					System.out.println("Enter Course ID: ");
+					String selectCID = "select * from courses where COURSE_ID = ?";
+					String courseID = in.nextLine(); // TO DO: Input from user
+					try {
+						stmt = conn.prepareStatement(selectCID);
+						rs = stmt.executeQuery();
+						while (rs.next()) {
+							String course_id = rs.getString("COURSE_ID");
+							String title = rs.getString("TITLE");
+							String class_level = rs.getString("CLASS_LEVEL");
+							String department = rs.getString("DEPARTMENT");
+							System.out.println(
+									String.format("| %-5s\t | \t %-35s\t | \t %-5s |", course_id, title, department));
+							// System.out.println(course_id +
+							// "\t\t"+title+"\t\t"+class_level+"\t\t"+department);
+						}
+					} catch (SQLException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+
+					break;
+				case 3:
+
+					break;
+
+				default:
+					break;
 				}
-
-				opt = "y";
-				while (opt.toLowerCase().equals("y"))
-					viewOrAdd(in, sid);
 				switchOption = goBackToMenuOption(in);
 
 				break;
@@ -120,10 +162,7 @@ public class Homepage {
 				sid = in.nextLine();
 
 				opt = "y";
-				while (opt.toLowerCase().equals("y"))
-					viewOrAdd(in, sid);
 
-				switchOption = goBackToMenuOption(in);
 				break;
 
 			case 5:
@@ -140,7 +179,7 @@ public class Homepage {
 			default:
 				System.out.println("Invalid Option");
 				switchOption = goBackToMenuOption(in);
-				for (int i = 0; i < 50; i++) {
+				for (int j = 0; j < 50; j++) {
 					System.out.println();
 				}
 
@@ -191,11 +230,6 @@ public class Homepage {
 			System.out.println("\nExiting...\n");
 		}
 		return switchOption;
-	}
-
-	private static void viewOrAdd(Scanner in, String sid) {
-		// TODO Auto-generated method stub
-
 	}
 
 	private static void getStud(Scanner in, String sid) {
