@@ -1,186 +1,198 @@
-import java.io.IOException;
 import java.sql.Connection;
 import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Scanner;
 
-public class Homepage {
+public class Homepage2 {
+	public static final Connection conn = JDBC_Connection.makeConnection();
+	public static final Scanner in = new Scanner(System.in);
+	public static ResultSet rs;
+	public static PreparedStatement preparedStatement;
+	public static String query;
 
-	public static PreparedStatement stmt;
+	public static void printWelcome() {
+		System.out.println("***************************************");
+		System.out.println("Welcome to CSC 540 Project Spring 2017");
+		System.out.println("***************************************");
+	}
 
-	public static void main(String[] args) {
-		Scanner in = new Scanner(System.in);
-
-		System.out.println("***********");
-		System.out.println("Admin Login");
-		System.out.println("***********");
+	public static void loginUser() {
 		System.out.println("Enter Username:");
 		String username = in.nextLine();
 		System.out.println("Enter password:");
 		String password = in.nextLine();
+		String name = "";
+		boolean admin = false;
+		query = "Select * from ADMINISTRATOR WHERE USERNAME=? and PASSWORD=?";
+		try {
+			preparedStatement = conn.prepareStatement(query);
+			preparedStatement.setString(1, username);
+			preparedStatement.setString(2, password);
+			rs = preparedStatement.executeQuery();
+			if (rs.next()) {
+				admin = true;
+				name = rs.getString("F_NAME") + " " + rs.getString("L_NAME");
+			} else {
+				query = "Select * from STUDENT WHERE USERNAME=? and PASSWORD=?";
+				preparedStatement = conn.prepareStatement(query);
+				preparedStatement.setString(1, username);
+				preparedStatement.setString(2, password);
+				rs = preparedStatement.executeQuery();
 
-		Connection conn = JDBC_Connection.makeConnection();
-		// java.sql.Statement stmt = null;
-		ResultSet rs = null;
-
-		String sid;
-
-		Date dob;
-
-		System.out.println("Hello Admin");
-
-		boolean switchOption = true;
-
-		while (switchOption) {
-			System.out.println("Please choose an option:");
-			System.out.println("1 to enter new student data");
-			System.out.println("2 to get Student Info");
-			System.out.println("3 to View or Add Course");
-			System.out.println("4 to View or Add Course Offering");
-			int option = in.nextInt();
-			in.nextLine();
-			String opt = "y";
-
-			switch (option) {
-			case 1:
-				opt = "y";
-
-				while (opt.toLowerCase().equals("y")) {
-					opt = newStud(in, opt);
+				if (rs.next()) {
+					admin = false;
+					name = rs.getString("F_NAME") + " " + rs.getString("L_NAME");
+				} else {
+					System.out.println("Invalid Username or Password Try Again");
+					loginUser();
 				}
-
-				switchOption = goBackToMenuOption(in);
-
-				break;
-
-			case 2:
-				/*
-				 * Task: After Showing details. Provide 2 options Check another
-				 * student details Enter grades for this student
-				 */
-
-				System.out.println("Enter Student ID: ");
-				sid = in.nextLine();
-				opt = "y";
-
-				while (opt.toLowerCase().equals("y"))
-					getStud(in, sid);
-				switchOption = goBackToMenuOption(in);
-
-				break;
-
-			case 3:
-				System.out.println("View/Add Courses");
-				System.out.println("****************\n");
-				System.out.println("Press 1 to view all courses");
-				System.out.println("Press 2 to view course by Course ID");
-				System.out.println("Press 3 to Add Course:");
-				int i = in.nextInt();
-				in.nextLine();
-
-				switch (i) {
-
-				case 1:
-					System.out.println("Displaying all courses:\n");
-					try {
-						String selectAllCourses = "Select * from Courses";
-						stmt = conn.prepareStatement(selectAllCourses);
-						rs = stmt.executeQuery();
-						while (rs.next()) {
-							String course_id = rs.getString("COURSE_ID");
-							String title = rs.getString("TITLE");
-							String class_level = rs.getString("CLASS_LEVEL");
-							String department = rs.getString("DEPARTMENT");
-							System.out.println(
-									String.format("| %-5s\t | \t %-35s\t | \t %-5s |", course_id, title, department));
-							// System.out.println(course_id +
-							// "\t\t"+title+"\t\t"+class_level+"\t\t"+department);
-						}
-
-					} catch (SQLException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					} finally {
-						close(conn);
-						close(stmt);
-						close(rs);
-
-					}
-
-					break;
-
-				case 2:
-					System.out.println("Enter the COurses");
-					System.out.println("Displaying course by Course ID");
-
-					System.out.println("Enter Course ID: ");
-					String selectCID = "select * from courses where COURSE_ID = ?";
-					String courseID = in.nextLine(); // TO DO: Input from user
-					try {
-						stmt = conn.prepareStatement(selectCID);
-						rs = stmt.executeQuery();
-						while (rs.next()) {
-							String course_id = rs.getString("COURSE_ID");
-							String title = rs.getString("TITLE");
-							String class_level = rs.getString("CLASS_LEVEL");
-							String department = rs.getString("DEPARTMENT");
-							System.out.println(
-									String.format("| %-5s\t | \t %-35s\t | \t %-5s |", course_id, title, department));
-							// System.out.println(course_id +
-							// "\t\t"+title+"\t\t"+class_level+"\t\t"+department);
-						}
-					} catch (SQLException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-
-					break;
-				case 3:
-
-					break;
-
-				default:
-					break;
-				}
-				switchOption = goBackToMenuOption(in);
-
-				break;
-
-			case 4:
-				System.out.println("View/Add Course Offering");
-
-				System.out.println("Enter Student ID: ");
-				sid = in.nextLine();
-
-				opt = "y";
-
-				break;
-
-			case 5:
-				System.out.println("View Pending Requests");
-
-				// get pending requests from the table
-
-				System.out.println("ADMIN: Please select request number:");
-				String reqNo = in.nextLine();
-				System.out.println("Do you want to approve: ");
-
-				break;
-
-			default:
-				System.out.println("Invalid Option");
-				switchOption = goBackToMenuOption(in);
-				for (int j = 0; j < 50; j++) {
-					System.out.println();
-				}
-
 			}
+			if (admin)
+				welcomeAdmin(name);
+			else
+				System.out.println("Welcome Student");
+			// else
+			// student home page
+
+		} catch (Exception e) {
+			e.printStackTrace();
+			System.out.println("Hello Exception");
+		}
+
+	}
+
+	public static void enterNewStudent() throws Exception {
+		System.out.println("*********************");
+		System.out.println("Enter a new Student");
+		System.out.println("**********************");
+		System.out.print("Student ID: ");
+		String student_id = in.nextLine();
+		System.out.print("Username: ");
+		String username = in.nextLine();
+		System.out.print("First Name: ");
+		String f_name = in.nextLine();
+		System.out.print("Last Name: ");
+		String l_name = in.nextLine();
+		System.out.print("GPA: ");
+		float gpa = in.nextFloat();
+		in.nextLine();
+		System.out.print("Email ID: ");
+		String email = in.nextLine();
+		System.out.print("Password: ");
+		String password = in.nextLine();
+
+		System.out.print("Residency: ");
+		String residency = getResidency();
+
+		System.out.print("Classification Level: ");
+		String class_level = getClassificationLevel();
+
+		System.out.print("Department: ");
+		String dept = in.nextLine();
+		
+		System.out.print("Date of Birth(yyyy-mm-dd): ");
+		String date = in.nextLine();
+		Date dob = Date.valueOf(date);
+		System.out.println(dob);
+		query = "insert into STUDENT(STUDENT_ID,F_NAME, l_name, gpa, email, password, "
+				+ "current_credits,residency, class_level, department, "
+				+ "pending_bill,dob,username) values (?,?,?,?,?,?,?,?,?,?,?,?,?)";
+		preparedStatement = conn.prepareStatement(query);
+		preparedStatement.setString(1, student_id);
+		preparedStatement.setString(2, f_name);
+		preparedStatement.setString(3, l_name);
+		preparedStatement.setFloat(4, gpa);
+		preparedStatement.setString(5, email);
+		preparedStatement.setString(6, password);
+		preparedStatement.setInt(7, 0);
+		preparedStatement.setString(8, residency);
+		preparedStatement.setString(9, class_level);
+		preparedStatement.setString(10, dept);
+		preparedStatement.setInt(11, 0);
+		preparedStatement.setDate(12, dob);
+		preparedStatement.setString(13, username);
+
+		if (preparedStatement.executeUpdate() == 1) {
+			System.out.println("Student Entered Successfully");
+		} else {
+			System.out.println("Error Encountered");
+		}
+
+	}
+
+	private static String getClassificationLevel() {
+		System.out.println("Enter\n 1 for Undergraduate \n 2 for Graduate");
+		int opt = in.nextInt();
+		String class_level = "Undergraduate";
+		switch (opt) {
+		case 1:
+			class_level = "Undergraduate";
+			break;
+		case 2:
+			class_level = "Graduate";
+
+		default:
+			System.out.println("Invalid input.\nPlease enter a valid input");
+			getResidency();
 
 		}
 
+		return class_level;
+	}
+
+	private static String getResidency() {
+		System.out.println("Enter\n 1 for in-state\n 2 for out-state\n 3 for international");
+		int opt = in.nextInt();
+		String residency = "in-state";
+		switch (opt) {
+		case 1:
+			residency = "in-state";
+			break;
+		case 2:
+			residency = "out-state";
+		case 3:
+			residency = "international";
+		default:
+			System.out.println("Invalid input.\nPlease enter a valid input");
+			getResidency();
+
+		}
+
+		return residency;
+	}
+
+	public static void viewStudent() {
+
+	}
+
+	public static void welcomeAdmin(String adminName) {
+		System.out.println("***************************************");
+		System.out.println("Welcome " + adminName);
+		System.out.println("***************************************");
+		System.out.println("Please choose an option:");
+		System.out.println("1 to enter new student data");
+		System.out.println("2 to get Student Info");
+		System.out.println("3 to View or Add Course");
+		System.out.println("4 to View or Add Course Offering");
+		int option = in.nextInt();
+		in.nextLine();
+		switch (option) {
+		case 1:
+			try {
+				enterNewStudent();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			break;
+		default:
+		}
+	}
+
+	public static void main(String[] args) {
+		printWelcome();
+		loginUser();
 	}
 
 	static void close(Connection conn) {
@@ -209,65 +221,6 @@ public class Homepage {
 			} catch (Throwable whatever) {
 			}
 		}
-	}
-
-	private static boolean goBackToMenuOption(Scanner in) {
-		boolean switchOption;
-		String switchOptionInput;
-		System.out.println("To go back to the main menu press 'y'\nOr else press any key to exit");
-		switchOptionInput = in.nextLine();
-
-		if (switchOptionInput.toLowerCase().equals("y")) {
-			switchOption = true;
-		} else {
-			switchOption = false;
-			System.out.println("\nExiting...\n");
-		}
-		return switchOption;
-	}
-
-	private static void getStud(Scanner in, String sid) {
-
-	}
-
-	private static String newStud(Scanner in, String opt) {
-		String sid;
-		String email;
-		String f_name;
-		String l_name;
-		String address;
-		String date;
-		Date dob;
-		System.out.println("Enter First Name of the student: ");
-		f_name = in.nextLine();
-		System.out.println("Enter Last Name of the student: ");
-		l_name = in.nextLine();
-		System.out.println("Enter id of the student: ");
-		sid = in.nextLine();
-		System.out.println("Enter Email of the student: ");
-		email = in.nextLine();
-		System.out.println("Enter Address of the student: ");
-		address = in.nextLine();
-
-		while (true) {
-			try {
-				System.out.println("Enter date of birth of the student(yyyy-dd-mm): ");
-				date = in.nextLine();
-				dob = Date.valueOf(date);
-				System.out.println("Date is: " + dob);
-
-				break;
-			} catch (java.lang.IllegalArgumentException e) {
-				System.out.println("Please enter a valid date in the format yyyy-dd-mm");
-			}
-		}
-		// catch (java.lang.IllegalArgumentException e) {
-
-		System.out.println("Press 'y' to enter more");
-		opt = in.nextLine();
-
-		return opt;
-
 	}
 
 }
