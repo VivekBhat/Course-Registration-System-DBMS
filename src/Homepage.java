@@ -5,7 +5,7 @@ import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.Scanner;
 
-public class Homepage2 {
+public class Homepage {
 	public static final Connection conn = JDBC_Connection.makeConnection();
 	public static final Scanner in = new Scanner(System.in);
 	public static ResultSet rs;
@@ -91,7 +91,7 @@ public class Homepage2 {
 
 		System.out.print("Department: ");
 		String dept = in.nextLine();
-		
+
 		System.out.print("Date of Birth(yyyy-mm-dd): ");
 		String date = in.nextLine();
 		Date dob = Date.valueOf(date);
