@@ -12,6 +12,7 @@ public class Homepage {
 	public static ResultSet rs;
 	public static PreparedStatement preparedStatement;
 	public static String query;
+        public static final String CURR_SESSION = "Spring 2017";
 
 	public static void printWelcome() {
 		System.out.println("***************************************");
@@ -398,8 +399,7 @@ public class Homepage {
 	
 	}
         
-        public static void viewStudentProfile(String student_id) throws Exception
-        {
+        public static void viewStudentProfile(String student_id) throws Exception {
             query = "select f_name,L_NAME,GPA,EMAIL,DEPARTMENT from student where student_id=?";
             preparedStatement = conn.prepareStatement(query);
             preparedStatement.setString(1, student_id);
@@ -415,6 +415,43 @@ public class Homepage {
             }
             System.out.println("***************************************");
             
+        }
+        
+        public static void viewMyCourses(String student_id) throws Exception {
+            
+            query = "SELECT c.title,e.grade,i.instr_name, e.session_id "
+                    + "FROM enrollment e,student s, courses c, instructor i "
+                    + "WHERE s.STUDENT_ID=? "
+                    + "and s.STUDENT_ID=e.STUDENT_ID "
+                    + "and e.status = 'Enrolled' "
+                    + "and c.course_id = e.course_id "
+                    + "and i.instr_id = e.instr_id";
+            preparedStatement = conn.prepareStatement(query);
+            preparedStatement.setString(1, student_id);
+            rs = preparedStatement.executeQuery();
+            
+            //Formatting Output
+            for(int i=0;i<99;i++)
+                System.out.print("_");
+            System.out.println("");
+            System.out.println(String.format("%-20s\t%-10s\t%-30s\t%-15s", "Course Name",
+                                                                           "Grade", 
+                                                                           "Instructor Name", 
+                                                                           "Session"));
+            for(int i=0;i<99;i++)
+                System.out.print("_");
+            System.out.println("");
+            //Formatting Ends here
+            
+            
+            while(rs.next())
+            {
+                String course_name = rs.getString("title");
+                String grade = rs.getString("grade");
+                String instr_name = rs.getString("instr_name");
+                String session = rs.getString("session_id");
+                System.out.println(String.format("%-20s\t%-10s\t%-30s\t%-15s\n", course_name, grade, instr_name, session));
+            }
         }
 
 	public static void welcomeAdmin(String adminName) {
@@ -477,7 +514,7 @@ public class Homepage {
 		}
 	}
         
-        public static void welcomeStudent(String studentName, String student_id) throws Exception{
+        public static void welcomeStudent(String studentName, String student_id) throws Exception {
             	System.out.println("***************************************");
 		System.out.println("Welcome " + studentName);
 		System.out.println("***************************************");
@@ -485,7 +522,7 @@ public class Homepage {
 		System.out.println("1 View Profile");
                 System.out.println("2 View All Courses");
                 System.out.println("3 Enroll Courses");
-                System.out.println("4 View Enrolled Courses");
+                System.out.println("4 View My Courses");
 		System.out.println("5 View Pending Courses");
 		System.out.println("6 View Grades");
 		System.out.println("7 View/Pay Bill\n\n");
@@ -497,12 +534,14 @@ public class Homepage {
                         break;
                         
                     case 2:
+                        
                         break;
                         
                     case 3:
                         break;
                         
                     case 4:
+                        viewMyCourses(student_id);
                         break;
                         
                     case 5:
