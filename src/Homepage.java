@@ -137,10 +137,56 @@ public class Homepage {
 			String course_id = rs.getString("course_id");
 			String grade = rs.getString("grade");
 			System.out.println(String.format("%-20s\t%-20s\t%-15s\t%-6s\t%-5s", name, email, dob, course_id, grade));
+                        System.out.println("Press 1 to Enter Grdaes for "+name+"\nPress 0 to exit");
+                        int input = in.nextInt();
+                        if(input==0)
+                            viewStudent();
+                        else if(input ==1)
+                            enterGrades(stu_id);
+                        else
+                        {
+                            System.out.println("Invalid option");
+                            viewStudent();
+                        }
+                        
 		} else {
 			System.out.println("No Such Student Exists");
 		}
 	}
+        
+        public static void enterGrades(String studentId) throws Exception {
+            query = "SELECT e.course_id,e.grade " + 
+                    "FROM enrollment e "
+                    + "WHERE e.STUDENT_ID = "+studentId;
+            preparedStatement = conn.prepareStatement(query);
+            rs = preparedStatement.executeQuery();
+            int num =1;
+            while(rs.next())
+            {
+                String course_id = rs.getString("course_id");
+		String grade = rs.getString("grade");
+                System.out.println(String.format("%-2s\t%-6s\t%-30s\t",num+++"", course_id,grade));
+            }
+            String grades[] = {"A+","A","A-","B+","B","B-","C+","C","C-"};
+            System.out.println("Enter Course ID for which you want to add Grades");
+            String c_id = in.next();
+            System.out.println("Select Grade for this Course");
+            System.out.println(String.format("%-5s\t%-5s\t%-5s\n%-5s\t%-5s\t%-5s\n%-5s\t%-5s\t%-5s\n","1.A+","2.A","3.A-",
+                                                                                                      "4.B+","5.B","6.B-",
+                                                                                                      "7.C+","8.C","9.C-"));
+            int grade = in.nextInt();
+            query = "update enrollment set grade=? where STUDENT_ID=? and COURSE_ID=?";
+            preparedStatement = conn.prepareCall(query);
+            preparedStatement.setString(1, grades[grade-1]);
+            preparedStatement.setString(2, studentId);
+            preparedStatement.setString(3, c_id);
+            if(preparedStatement.executeUpdate()==1)
+                System.out.println("Grades Entered");
+            else
+                System.out.println("Error Entering Grades. Please Try Again");
+            viewStudent();
+            
+        }
 
 	private static String getClassificationLevel() {
 		System.out.println("Enter\n 1 for Undergraduate \n 2 for Graduate");
@@ -409,6 +455,20 @@ public class Homepage {
 		default:
 		}
 	}
+        
+        public static void welcomeStudent(String studentName) {
+            	System.out.println("***************************************");
+		System.out.println("Welcome " + studentName);
+		System.out.println("***************************************");
+		System.out.println("Please choose an option:");
+		System.out.println("1 View Profile");
+                System.out.println("2 View All Courses");
+                System.out.println("3 Enroll Courses");
+                System.out.println("4 View Enrolled Courses");
+		System.out.println("5 View Pending Courses");
+		System.out.println("6 View Grades");
+		System.out.println("7 View/Pay Bill\n\n");
+        }
 
 	public static void main(String[] args) {
 		printWelcome();
