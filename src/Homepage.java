@@ -5,7 +5,7 @@ import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.Scanner;
 
-public class Homepage {
+public class Homepage2 {
 	public static final Connection conn = JDBC_Connection.makeConnection();
 	public static final Scanner in = new Scanner(System.in);
 	public static ResultSet rs;
@@ -91,14 +91,13 @@ public class Homepage {
 
 		System.out.print("Department: ");
 		String dept = in.nextLine();
-
-		System.out.print("Date of Birth(yyyy-mm-dd): ");
+		System.out.print("Date of Birth(yyyy-dd-mm): ");
 		String date = in.nextLine();
 		Date dob = Date.valueOf(date);
 		System.out.println(dob);
 		query = "insert into STUDENT(STUDENT_ID,F_NAME, l_name, gpa, email, password, "
 				+ "current_credits,residency, class_level, department, "
-				+ "pending_bill,dob,username) values (?,?,?,?,?,?,?,?,?,?,?,?,?)";
+				+ "pending_bill) values (?,?,?,?,?,?,?,?,?,?,?)";
 		preparedStatement = conn.prepareStatement(query);
 		preparedStatement.setString(1, student_id);
 		preparedStatement.setString(2, f_name);
@@ -111,15 +110,35 @@ public class Homepage {
 		preparedStatement.setString(9, class_level);
 		preparedStatement.setString(10, dept);
 		preparedStatement.setInt(11, 0);
-		preparedStatement.setDate(12, dob);
-		preparedStatement.setString(13, username);
-
 		if (preparedStatement.executeUpdate() == 1) {
 			System.out.println("Student Entered Successfully");
 		} else {
 			System.out.println("Error Encountered");
 		}
 
+	}
+
+	public static void viewStudent() throws Exception {
+		System.out.println("*********************");
+		System.out.println("Search Student");
+		System.out.println("*********************");
+		System.out.print("Enter Student ID: ");
+		String stu_id = in.nextLine();
+		query = "SELECT s.f_name, s.l_name, s.DOB, s.EMAIL,e.course_id,e.grade " + "FROM enrollment e, student s "
+				+ "WHERE s.STUDENT_ID=? and s.STUDENT_ID=e.STUDENT_ID";
+		preparedStatement = conn.prepareStatement(query);
+		preparedStatement.setString(1, stu_id);
+		rs = preparedStatement.executeQuery();
+		if (rs.next()) {
+			String name = rs.getString("f_name") + " " + rs.getString("l_name");
+			String email = rs.getString("email");
+			String dob = rs.getDate("dob").toString();
+			String course_id = rs.getString("course_id");
+			String grade = rs.getString("grade");
+			System.out.println(String.format("%-20s\t%-20s\t%-15s\t%-6s\t%-5s", name, email, dob, course_id, grade));
+		} else {
+			System.out.println("No Such Student Exists");
+		}
 	}
 
 	private static String getClassificationLevel() {
@@ -163,10 +182,6 @@ public class Homepage {
 		return residency;
 	}
 
-	public static void viewStudent() {
-
-	}
-
 	public static void welcomeAdmin(String adminName) {
 		System.out.println("***************************************");
 		System.out.println("Welcome " + adminName);
@@ -182,6 +197,13 @@ public class Homepage {
 		case 1:
 			try {
 				enterNewStudent();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			break;
+		case 2:
+			try {
+				viewStudent();
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
