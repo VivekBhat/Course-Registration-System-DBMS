@@ -19,6 +19,9 @@ public class Homepage {
 		System.out.println("Welcome to CSC 540 Project Spring 2017");
 		System.out.println("***************************************");
 	}
+        
+        /* 03/30/2017 dsuri - Danish Suri
+           This method provides common login interface for both Admin and Student */
 
 	public static void loginUser() {
 		System.out.println("Enter Username:");
@@ -66,6 +69,9 @@ public class Homepage {
 		}
 
 	}
+        
+        /* 03/30/2017 dsuri - Danish Suri
+           This method is used by Admin to add New Student in the Database */
 
 	public static void enterNewStudent() throws Exception {
 		System.out.println("*********************");
@@ -121,6 +127,9 @@ public class Homepage {
 		}
 
 	}
+        
+        /* 03/30/2017 dsuri - Danish Suri
+           This method is used by Admin to view details of a Student using their Student ID */
 
 	public static void viewStudent() throws Exception {
 		System.out.println("*********************");
@@ -157,6 +166,9 @@ public class Homepage {
 		}
 	}
         
+        /* 03/30/2017 dsuri - Danish Suri
+           This method is used by Admin to add Grades of a Student in the courses they have enrolled */
+        
         public static void enterGrades(String studentId) throws Exception {
             query = "SELECT e.course_id,e.grade " + 
                     "FROM enrollment e "
@@ -190,6 +202,9 @@ public class Homepage {
             viewStudent();
             
         }
+        
+        /* 03/30/2017 dsuri - Danish Suri
+           Helper Method to fetch Classification Level */
 
 	private static String getClassificationLevel() {
 		System.out.println("Enter\n 1 for Undergraduate \n 2 for Graduate");
@@ -210,6 +225,9 @@ public class Homepage {
 
 		return class_level;
 	}
+        
+        /* 03/30/2017 dsuri - Danish Suri
+           Helper Method to fetch Residency*/
 
 	private static String getResidency() {
 		System.out.println("Enter\n 1 for in-state\n 2 for out-state\n 3 for international");
@@ -617,6 +635,9 @@ public class Homepage {
 			return null;
 	}
         
+        /* 03/31/2017 dsuri - Danish Suri
+           This method is used by Student to view their Profile*/
+        
         public static void viewStudentProfile(String student_id) throws Exception {
             query = "select f_name,L_NAME,GPA,EMAIL,DEPARTMENT from student where student_id=?";
             preparedStatement = conn.prepareStatement(query);
@@ -634,6 +655,9 @@ public class Homepage {
             System.out.println("***************************************");
             
         }
+        
+        /* 03/31/2017 dsuri - Danish Suri
+           This method is used by Student to view their Enrolled Courses*/
         
         public static void viewMyCourses(String student_id) throws Exception {
             
@@ -672,6 +696,9 @@ public class Homepage {
             }
         }
         
+        /* 03/31/2017 dsuri - Danish Suri
+           This method is used by Student to view all current courses which are being offered*/
+        
         public static void viewAllCurrentCourses() throws Exception {
             query = "select c.title, i.instr_name, co.max_student, "
                     + "sc.day, sc.day2, sc.start_time, sc.end_time, "
@@ -707,6 +734,9 @@ public class Homepage {
             }
         }
         
+        /* 03/31/2017 dsuri - Danish Suri
+           This method is used by Student to view their Grades and GPA*/
+        
         public static void displayGrades(int option, String student_id) throws Exception {
             if(option == 1)
             {
@@ -738,6 +768,9 @@ public class Homepage {
                 System.out.println("Invalid Option");
             }
         }
+        
+        /* 03/31/2017 dsuri - Danish Suri
+           This method is used by Student to view their Pending Bill and to Pay Bill*/
         
         public static void viewBill(String student_id) throws Exception {
             query = "select pending_bill from student where student_id =?";
@@ -780,6 +813,9 @@ public class Homepage {
             
         }
         
+        /* 03/31/2017 dsuri - Danish Suri
+           This method is used by Student to view their Pending Course Permission Requests Status */
+        
         public static void viewPendingCourses(String student_id) throws Exception {
             query = "SELECT * FROM PENDING_PERMISSIONS WHERE STUDENT_ID = ? and PERMISSION = 'Pending' OR PERMISSION = 'Rejected'";
             preparedStatement = conn.prepareStatement(query);
@@ -793,6 +829,9 @@ public class Homepage {
                 System.out.println(String.format("%-10s\t%-7s\n",course_id,status));
             }
         }
+        
+        /* 03/30/2017 dsuri - Danish Suri
+           Helper Method called after Admin Logins*/
 
 	public static void welcomeAdmin(String adminName) {
 		System.out.println("***************************************");
@@ -874,6 +913,9 @@ public class Homepage {
 		default:
 		}
 	}
+        
+        /* 03/31/2017 dsuri - Danish Suri
+           Helper Method called after Student Logins*/
         
         public static void welcomeStudent(String studentName, String student_id) throws Exception {
             	System.out.println("***************************************");
