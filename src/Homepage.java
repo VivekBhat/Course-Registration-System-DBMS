@@ -2,10 +2,11 @@ import java.sql.Connection;
 import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Scanner;
 
-public class Homepage2 {
+public class Homepage {
 	public static final Connection conn = JDBC_Connection.makeConnection();
 	public static final Scanner in = new Scanner(System.in);
 	public static ResultSet rs;
@@ -20,9 +21,9 @@ public class Homepage2 {
 
 	public static void loginUser() {
 		System.out.println("Enter Username:");
-		String username = in.nextLine();
+		String username = in.next();
 		System.out.println("Enter password:");
-		String password = in.nextLine();
+		String password = in.next();
 		String name = "";
 		boolean admin = false;
 		query = "Select * from ADMINISTRATOR WHERE USERNAME=? and PASSWORD=?";
@@ -68,20 +69,20 @@ public class Homepage2 {
 		System.out.println("Enter a new Student");
 		System.out.println("**********************");
 		System.out.print("Student ID: ");
-		String student_id = in.nextLine();
+		String student_id = in.next();
 		System.out.print("Username: ");
-		String username = in.nextLine();
+		String username = in.next();
 		System.out.print("First Name: ");
-		String f_name = in.nextLine();
+		String f_name = in.next();
 		System.out.print("Last Name: ");
-		String l_name = in.nextLine();
+		String l_name = in.next();
 		System.out.print("GPA: ");
 		float gpa = in.nextFloat();
-		in.nextLine();
+		in.next();
 		System.out.print("Email ID: ");
-		String email = in.nextLine();
+		String email = in.next();
 		System.out.print("Password: ");
-		String password = in.nextLine();
+		String password = in.next();
 
 		System.out.print("Residency: ");
 		String residency = getResidency();
@@ -90,9 +91,9 @@ public class Homepage2 {
 		String class_level = getClassificationLevel();
 
 		System.out.print("Department: ");
-		String dept = in.nextLine();
+		String dept = in.next();
 		System.out.print("Date of Birth(yyyy-dd-mm): ");
-		String date = in.nextLine();
+		String date = in.next();
 		Date dob = Date.valueOf(date);
 		System.out.println(dob);
 		query = "insert into STUDENT(STUDENT_ID,F_NAME, l_name, gpa, email, password, "
@@ -123,7 +124,7 @@ public class Homepage2 {
 		System.out.println("Search Student");
 		System.out.println("*********************");
 		System.out.print("Enter Student ID: ");
-		String stu_id = in.nextLine();
+		String stu_id = in.next();
 		query = "SELECT s.f_name, s.l_name, s.DOB, s.EMAIL,e.course_id,e.grade " + "FROM enrollment e, student s "
 				+ "WHERE s.STUDENT_ID=? and s.STUDENT_ID=e.STUDENT_ID";
 		preparedStatement = conn.prepareStatement(query);
@@ -181,6 +182,173 @@ public class Homepage2 {
 
 		return residency;
 	}
+        
+	private static void viewCourses(){
+		System.out.println("Displaying all courses:\n");
+		try {
+			String selectAllCourses = "Select * from Courses";
+			preparedStatement = conn.prepareStatement(selectAllCourses);
+			rs = preparedStatement.executeQuery();
+			while (rs.next()) {
+				String course_id = rs.getString("COURSE_ID");
+				String title = rs.getString("TITLE");
+				String class_level = rs.getString("CLASS_LEVEL");
+				String department = rs.getString("DEPARTMENT");
+				System.out.println(String.format("| %-10s\t | \t %-35s\t | \t %-5s |", course_id, title, department));
+				// System.out.println(course_id +
+				// "\t\t"+title+"\t\t"+class_level+"\t\t"+department);
+			}
+
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			close(conn);
+			close(preparedStatement);
+			close(rs);
+		}
+	}
+	
+	private static void viewCoursesById(){
+//		System.out.println("Enter the Course ID");
+		System.out.println("Displaying course by Course ID");
+		System.out.println("Enter Course ID: ");
+		String selectCID = "select * from courses where COURSE_ID = ?";
+		String courseID = in.next().toUpperCase(); // TO DO: Input from user
+		try {
+			preparedStatement = conn.prepareStatement(selectCID,ResultSet.TYPE_SCROLL_INSENSITIVE,ResultSet.CONCUR_UPDATABLE);
+			preparedStatement.setString(1, courseID);
+			rs = preparedStatement.executeQuery();
+			while (rs.next()) {
+				String course_id = rs.getString("COURSE_ID");
+				String title = rs.getString("TITLE");
+				String class_level = rs.getString("CLASS_LEVEL");
+				String department = rs.getString("DEPARTMENT");
+				System.out.println(
+						String.format("| %-5s\t | \t %-35s\t | \t %-5s |", course_id, title, department));
+				// System.out.println(course_id +
+				// "\t\t"+title+"\t\t"+class_level+"\t\t"+department);
+			}
+			rs.last();
+			int curr = rs.getRow();
+			if(curr<1){
+				System.out.println("No course matching this Course_ID. Please try again");
+                                viewCoursesById();
+			}
+				
+			
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	private static void addCourse(){
+		System.out.println("Adding new Course");
+		System.out.println("Enter Course ID: ");
+		String courseID = in.next(); // TO DO: Input from user
+		System.out.println("Enter Course Title: ");
+		String courseTitle = in.next(); // TO DO: Input from user
+		System.out.println("Enter minimum credits: ");
+		float minCredits= in.nextInt(); // TO DO: Input from user
+		System.out.println("Enter maximum credits: ");
+		float maxCredits= in.nextInt(); // TO DO: Input from user
+		System.out.println("Enter minimum GPA required: ");
+		float minGPA= in.nextFloat(); // TO DO: Input from user
+		/*user input for class level*/
+		int classLevel=0;
+		while(true){
+			System.out.println("Enter Class Level: 1 for Graduate, 2 for Undergrad ");
+			try{
+				classLevel= in.nextInt(); // TO DO: Input from user
+				if(classLevel!=1 && classLevel!=2){
+					throw new Exception();
+				}else{
+					break;
+				}
+			}catch(Exception e){
+				System.out.println("Please enter valid Class Level");
+			}
+		}
+		System.out.println("Enter Department: ");
+		String dept = in.next(); // TO DO: Input from user
+		/*user input special permission*/
+		
+		String splPermStr ="";
+		String preCID = "";
+		float preCourseGrade=0.0f;
+		while(true){
+			System.out.println("Enter Special Permission: 0 for None, 1 for Prerequisite course, 2 for Admin Permission, 3 for both");
+			preCID="";
+			preCourseGrade=0.0f;
+			
+			try{
+				int splPerm= in.nextInt(); // TO DO: Input from user
+				if(splPerm!=1 && splPerm!=2 && splPerm!=3&& splPerm!=0){
+					throw new Exception();
+				}else{
+					if(splPerm==0){
+						splPermStr="None";
+					}
+                                        else if(splPerm==1){
+						System.out.println("Enter Prerequisite Course ID: ");
+						preCID = in.next(); // TO DO: Input from user
+						System.out.println("Enter prerequisite course grade requirement: ");
+						preCourseGrade = in.nextFloat();
+						splPermStr="Prereq";
+						
+					}else if(splPerm==2){
+						splPermStr="SPP";
+					}else{
+						System.out.println("Enter Prerequisite Course ID: ");
+						preCID = in.next(); // TO DO: Input from user
+						System.out.println("Enter prerequisite course grade requirement: ");
+						preCourseGrade = in.nextFloat();
+						splPermStr = "SPPERM";
+					}
+					break;
+				}
+			}catch(Exception e){
+				System.out.println("Please enter valid Special Permission");
+				System.out.println("Enter Special Permission: 0 for None, 1 for Prerequisite course, 2 for Admin Permission, 3 for both");
+			}
+		}
+		
+		
+		String insertCourseSQL = "insert into COURSES(COURSE_ID,TITLE,MIN_Credits,max_credits,min_gpa, class_level, department, special_perm) values (?,?,?,?,?,?,?,?) ";
+		try {
+			preparedStatement = conn.prepareStatement(insertCourseSQL);
+			preparedStatement.setString(1, courseID);
+			preparedStatement.setString(2, courseTitle);
+			preparedStatement.setFloat(3, minCredits);
+			preparedStatement.setFloat(4, maxCredits);
+			preparedStatement.setFloat(5, minGPA);
+			if(classLevel==1){
+				preparedStatement.setString(6, "Graduate");
+			}else if(classLevel==1){
+				preparedStatement.setString(6, "Undergraduate");
+			}
+			preparedStatement.setString(7, dept);
+			preparedStatement.setString(8, splPermStr);
+			int result =  preparedStatement.executeUpdate();
+			System.out.println("insert course result = "+result);
+			/*adding prerequisite course*/
+			if(preCID!=null && preCID.length()>0){
+				String insertPrerCourseSQL = "insert into PREREQ(PREREQ_CID,GRADE_REQ,COURSE_ID) values(?,?,?)";
+				preparedStatement = conn.prepareStatement(insertPrerCourseSQL);
+				preparedStatement.setString(1, preCID);
+				preparedStatement.setFloat(2, preCourseGrade);
+				preparedStatement.setString(3, courseID);
+				int resultPreReq = preparedStatement.executeUpdate();
+				if(resultPreReq==1){
+					System.out.println("Prerequisite course added successfully");
+				}else{
+					System.out.println("Prerequisite course not able to add");
+				}
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+	
+	}
 
 	public static void welcomeAdmin(String adminName) {
 		System.out.println("***************************************");
@@ -192,22 +360,52 @@ public class Homepage2 {
 		System.out.println("3 to View or Add Course");
 		System.out.println("4 to View or Add Course Offering");
 		int option = in.nextInt();
-		in.nextLine();
 		switch (option) {
 		case 1:
-			try {
-				enterNewStudent();
-			} catch (Exception e) {
-				e.printStackTrace();
+			try 
+                        {
+                            enterNewStudent();
+			} catch (Exception e) 
+                        {
+                            e.printStackTrace();
 			}
 			break;
 		case 2:
-			try {
-				viewStudent();
-			} catch (Exception e) {
-				e.printStackTrace();
+                        try 
+                        {
+                            viewStudent();
+			} catch (Exception e) 
+                        {
+                            e.printStackTrace();
 			}
 			break;
+                case 3:
+                        try 
+                        {
+                            System.out.println("Press 1 to View All Courses");
+                            System.out.println("Press 2 to Search a Course by Course ID");
+                            System.out.println("Press 3 to Add a new Course");
+                            int choice = in.nextInt();
+                            switch(choice)
+                            {
+                                case 1: 
+                                    viewCourses();
+                                    break;
+                                case 2:
+                                    viewCoursesById();
+                                    break;
+                                case 3:
+                                    addCourse();
+                                    break;
+                                default:
+                                    System.out.println("Please Enter a valid choice");
+                                    welcomeAdmin(adminName);
+                            }
+                        } 
+                        catch (Exception e) 
+                        {
+                            
+                        }
 		default:
 		}
 	}
