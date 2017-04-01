@@ -204,6 +204,74 @@ public class Homepage {
         }
         
         /* 03/30/2017 dsuri - Danish Suri
+           This method is used by Admin to view Pending Requests and Approve them */
+        
+        public static void viewPendingRequests() throws Exception {
+            query = "SELECT * FROM PENDING_PERMISSIONS WHERE PERMISSION = 'Pending'";
+            preparedStatement = conn.prepareStatement(query,ResultSet.TYPE_SCROLL_INSENSITIVE,ResultSet.CONCUR_UPDATABLE);
+            rs = preparedStatement.executeQuery();
+            int num = 1;
+            System.out.println(String.format("%-5s\t%-20s\t%-20s\t","Row","Student ID","Course ID"));
+            while(rs.next())
+            {
+                String student_id = rs.getString("student_id");
+                String course_id = rs.getString("course_id");
+                System.out.println("*****************\n\n");
+                System.out.println("Pending Requests");
+                System.out.println("*****************\n");
+                System.out.println(String.format("%-5s\t%-20s\t%-20s\t",num+++"", student_id,course_id));
+                
+            }
+            System.out.println("Enter Row number to Approve/Reject request");
+            System.out.println("Press 0 to exit");
+            int inp = in.nextInt();
+            if(inp == 0)
+                viewPendingRequests();
+            else
+            {
+                rs.first();
+                for (int i = 0; i < inp; i++) 
+                {
+                    if(rs.next())
+                    {
+                        
+                    }
+                }
+                rs.previous();
+                String student_id = rs.getString("student_id");
+                String course_id = rs.getString("course_id");
+                String result = "Pending";
+                query = "UPDATE PENDING_PERMISSIONS SET PERMISSION = ? WHERE STUDENT_ID = ? AND COURSE_ID = ?";
+                System.out.println("Press 1. To Approve Request");
+                System.out.println("Press 2. To Reject Request");
+                System.out.println("Press 0. To Go Back");
+                inp = in.nextInt();
+                switch(inp)
+                {
+                    case 1:
+                        result = "Approved";
+                        break;
+                        
+                    case 2:
+                        result = "Rejected";
+                        break;
+                        
+                    case 0:
+                        //go to previous menu
+                        break;
+                }
+                preparedStatement = conn.prepareStatement(query);
+                preparedStatement.setString(1, result);
+                preparedStatement.setString(2, student_id);
+                preparedStatement.setString(3, course_id);
+                if(preparedStatement.executeUpdate()==1)
+                    System.out.println("Success");
+                else
+                    System.out.println("Fail");
+            }
+        }
+        
+        /* 03/30/2017 dsuri - Danish Suri
            Helper Method to fetch Classification Level */
 
 	private static String getClassificationLevel() {
@@ -842,6 +910,7 @@ public class Homepage {
 		System.out.println("2 to get Student Info");
 		System.out.println("3 to View or Add Course");
 		System.out.println("4 to View or Add Course Offering");
+                System.out.println("5 to View Pending Requests");
 		int option = in.nextInt();
 		switch (option) {
 		case 1:
@@ -910,6 +979,17 @@ public class Homepage {
 				welcomeAdmin(adminName);
 			}
 			break;
+                case 5:
+                    try 
+                    {
+                        viewPendingRequests();
+                    } 
+                    catch (Exception e) 
+                    {
+                        e.printStackTrace();
+                    }
+                    break;
+                    
 		default:
 		}
 	}
