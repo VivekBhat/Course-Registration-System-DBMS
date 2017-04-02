@@ -960,8 +960,7 @@ public class Homepage {
     /* 04/1/2017 dsuri - Danish Suri
      This is a helper method used to check if Student should be in waitlist, enroll or rejected */
     
-    public static void checkEnrollmentStatus(String courseId, String studentId, String instrId) throws Exception
-    {
+    public static void checkEnrollmentStatus(String courseId, String studentId, String instrId) throws Exception {
         int count = 0, total = 0, waitlist = 0;
         query = "SELECT COUNT(*) FROM ENROLLMENT WHERE COURSE_ID = ? AND SESSION_ID = ?";
         preparedStatement = conn.prepareStatement(query);
@@ -990,22 +989,29 @@ public class Homepage {
             }
             else if(count < waitlist+total)
             {
-                query = "insert into ENROLLMENT(STUDENT_ID,COURSE_ID,instr_id,grade,session_id,status) values(?,?,?,?,?,?)";
+                query = "insert into ENROLLMENT(STUDENT_ID,COURSE_ID,instr_id,grade,session_id,status,credits) values(?,?,?,?,?,?,?)";
                 preparedStatement = conn.prepareStatement(query);
                 preparedStatement.setString(1, studentId);
                 preparedStatement.setString(2, courseId);
                 preparedStatement.setString(3, instrId);
-                preparedStatement.setString(4, "NA");
-                preparedStatement.setString(5, CURR_SESSION);        
+                preparedStatement.setString(4, "A");
+                preparedStatement.setInt(7, 3);
+                preparedStatement.setString(5, CURR_SESSION);
                 if(count >= total)
                 {
                     preparedStatement.setString(6, "Waitlist");
-                    System.out.println("Added to Course Waitlist");
+                    if(preparedStatement.executeQuery()!=null)
+                        System.out.println("Added to Course Waitlist");
+                    else
+                        System.out.println("Error Adding Course");
                 }
                 else
                 {
                     preparedStatement.setString(6, "Enrolled");
-                    System.out.println("Enrollment Successfull");
+                    if(preparedStatement.executeQuery()!=null)
+                        System.out.println("Enrollment Successfull");
+                    else
+                        System.out.println("Error Adding Course");
                 }
             }
         }
