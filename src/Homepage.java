@@ -1,5 +1,4 @@
-import java.awt.AWTException;
-import java.awt.Robot;
+import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.Date;
 import java.sql.PreparedStatement;
@@ -14,6 +13,7 @@ public class Homepage {
     public static final Scanner in = new Scanner(System.in);
     public static ResultSet rs;
     public static PreparedStatement preparedStatement;
+    public static CallableStatement callableStatement;
     public static String query;
     public static final String CURR_SESSION = "Spring 2017";
 
@@ -63,7 +63,7 @@ public class Homepage {
             } else {
                 welcomeStudent(name, stu_id);
             }
-			// else
+            // else
             // student home page
 
         } catch (Exception e) {
@@ -328,7 +328,7 @@ public class Homepage {
                 System.out.println(String.format(
                         "| %-10s\t | \t %-35s\t | \t %-5s |", course_id, title,
                         department));
-				// System.out.println(course_id +
+                // System.out.println(course_id +
                 // "\t\t"+title+"\t\t"+class_level+"\t\t"+department);
             }
 
@@ -365,7 +365,7 @@ public class Homepage {
                 System.out.println(String.format(
                         "| %-5s\t | \t %-35s\t | \t %-5s |", course_id, title,
                         department));
-				// System.out.println(course_id +
+                // System.out.println(course_id +
                 // "\t\t"+title+"\t\t"+class_level+"\t\t"+department);
             }
             rs.last();
@@ -397,7 +397,7 @@ public class Homepage {
         float maxCredits = in.nextInt(); // TO DO: Input from user
         System.out.println("Enter minimum GPA required: ");
         float minGPA = in.nextFloat(); // TO DO: Input from user
-		/* user input for class level */
+        /* user input for class level */
         int classLevel = 0;
         while (true) {
             System.out
@@ -415,7 +415,7 @@ public class Homepage {
         }
         System.out.println("Enter Department: ");
         String dept = in.next(); // TO DO: Input from user
-		/* user input special permission */
+        /* user input special permission */
 
         String splPermStr = "";
         String preCID = "";
@@ -594,8 +594,8 @@ public class Homepage {
         String instrId = in.next(); // TO DO: Input from user
         //System.out.println("Enter Session ID: ");
         // String sessionId = in.next(); // TO DO: Input from user
-//		System.out.println("Enter Schedule ID: ");
-//		String scheduleId = in.next(); // TO DO: Input from user
+//      System.out.println("Enter Schedule ID: ");
+//      String scheduleId = in.next(); // TO DO: Input from user
         System.out.println("Enter Max Capacity: ");
         int capacity = in.nextInt(); // TO DO: Input from user
         System.out.println("Enter Current Waitlist Count: ");
@@ -646,7 +646,7 @@ public class Homepage {
         int day = 0;
         while (true) {
             try {
-				// System.out.println("in try again");
+                // System.out.println("in try again");
                 // in.next();
                 day = Integer.parseInt(in.next());
                 if (isNullAllowed) {
@@ -1148,6 +1148,7 @@ public class Homepage {
                 break;
 
             case 3:
+                enrollCourse(student_id);
                 break;
 
             case 4:
@@ -1176,14 +1177,50 @@ public class Homepage {
         }
     }
 
+    /*
+     * 02/04/2017 - Jitin Kumar
+     * This method shall be used to enroll the courses
+     * */
+    private static void enrollCourse(String studentId) {
+        System.out.println("Enroll for new Course");
+        System.out.println("Enter Course ID: ");
+        String courseId = in.next(); // TO DO: Input from user
+        System.out.println("Enter Instructor ID:");
+        String instrID = in.next(); // TO DO: Input from user
+        String query = "{call isEnrollable(?,?,?,?,?,?,?,?,?)}";
+        try{
+            callableStatement= conn.prepareCall(query);
+            callableStatement.setString(1, studentId);
+            callableStatement.setString(2, courseId);
+            callableStatement.setString(3, instrID);
+            callableStatement.setString(4, " ");
+            callableStatement.setString(5, CURR_SESSION);
+            callableStatement.setString(6, " ");
+            callableStatement.setInt(7, 3);
+            callableStatement.registerOutParameter(8, java.sql.Types.INTEGER);
+            callableStatement.registerOutParameter(9, java.sql.Types.VARCHAR);
+            callableStatement.executeUpdate();
+            int status = callableStatement.getInt(8);
+            String outputStr = callableStatement.getString(9);
+            if(status==0){
+                checkEnrollmentStatus(courseId, studentId, instrID);
+            }else if(status==1){
+                System.out.println("Error: could not register for the course");
+                System.out.println(outputStr);
+                return;
+            }else if(status==2){
+                System.out.println(outputStr);
+                return;
+            }
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+    }
+
+    
     public static void main(String[] args) {
         printWelcome();
-        try {
-            checkEnrollmentStatus("CS530");
-        } catch (Exception e) {
-        }
-
-        //loginUser();
+        loginUser();
     }
 
     static void close(Connection conn) {
