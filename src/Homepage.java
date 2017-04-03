@@ -97,7 +97,7 @@ public class Homepage {
         String l_name = in.next();
         System.out.print("GPA: ");
         float gpa = in.nextFloat();
-        in.next();
+        in.nextLine();
         System.out.print("Email ID: ");
         String email = in.next();
         System.out.print("Password: ");
@@ -111,13 +111,12 @@ public class Homepage {
 
         System.out.print("Department: ");
         String dept = in.next();
-        System.out.print("Date of Birth(yyyy-dd-mm): ");
+        System.out.print("Date of Birth(yyyy-mm-dd): ");
         String date = in.next();
         Date dob = Date.valueOf(date);
-        System.out.println(dob);
         query = "insert into STUDENT(STUDENT_ID,F_NAME, l_name, gpa, email, password, "
                 + "current_credits,residency, class_level, department, "
-                + "pending_bill) values (?,?,?,?,?,?,?,?,?,?,?)";
+                + "pending_bill, username) values (?,?,?,?,?,?,?,?,?,?,?,?)";
         preparedStatement = conn.prepareStatement(query);
         preparedStatement.setString(1, student_id);
         preparedStatement.setString(2, f_name);
@@ -130,9 +129,10 @@ public class Homepage {
         preparedStatement.setString(9, class_level);
         preparedStatement.setString(10, dept);
         preparedStatement.setInt(11, 0);
+        preparedStatement.setString(12, username);
         if (preparedStatement.executeUpdate() == 1) {
             System.out.println("Student Entered Successfully");
-            welcomeAdmin(adminName, username);
+            welcomeAdmin(adminName, adminUsername);
         } else {
             System.out.println("Error Encountered");
         }
