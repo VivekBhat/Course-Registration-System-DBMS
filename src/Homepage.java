@@ -17,7 +17,7 @@ public class Homepage {
     public static CallableStatement callableStatement;
     public static String query;
     public static final String CURR_SESSION = "Spring 2017";
-    public static String studentName, adminName,adminUsername, studentId;
+    public static String studentName, adminName,adminUsername, studentId,studentClassLevel;
     private static final HashMap<String,Float> grades = new HashMap<>();
     
     public static void printWelcome() {
@@ -56,6 +56,7 @@ public class Homepage {
                     admin = false;
                     name = rs.getString("F_NAME") + " " + rs.getString("L_NAME");
                     stu_id = rs.getString("student_id");
+                    studentClassLevel = rs.getString("class_level");
                 } else {
                     System.out.println("Invalid Username or Password Try Again");
                     loginUser();
@@ -647,8 +648,9 @@ public class Homepage {
             credits += rs.getInt("CREDITS");
         }
        
-        query = "UPDATE STUDENT SET CURRENT_CREDITS = ?";
+        query = "UPDATE STUDENT SET CURRENT_CREDITS = ? WHERE STUDENT_ID=?";
         preparedStatement = conn.prepareStatement(query);
+        preparedStatement.setString(2, studentId);
         preparedStatement.setInt(1, credits);
         if (preparedStatement.executeUpdate() == 1) 
         {
@@ -1030,23 +1032,25 @@ public class Homepage {
     /* 03/31/2017 dsuri - Danish Suri
      This method is used by Student to view all current courses which are being offered*/
     public static void viewAllCurrentCourses() throws Exception {
-        query = "select c.title, i.instr_name, co.max_student, "
+        query = "select c.course_id,c.title, i.instr_name, co.max_student, "
                 + "sc.day, sc.day2, sc.start_time, sc.end_time, "
                 + "sc.location "
                 + "from COURSE_OFFERED co, instructor i, courses c, schedule sc "
                 + "where co.session_id = ? and "
                 + "co.course_id = c.course_id and "
                 + "i.instr_id = co.instr_id and "
-                + "co.schedule_id = sc.schedule_id";
+                + "co.schedule_id = sc.schedule_id "
+                + "and c.class_level = ?";
         preparedStatement = conn.prepareStatement(query);
         preparedStatement.setString(1, CURR_SESSION);
+        preparedStatement.setString(2, studentClassLevel);
         rs = preparedStatement.executeQuery();
         for (int i = 0; i < 170; i++) {
             System.out.print("_");
         }
         System.out.println("");
-        System.out.println(String.format("%-20s\t%-20s\t%-15s\t%-10s\t%-10s\t%-20s\t%-20s\t%-10s",
-                "Title", "Instructor", "Max-Students", "Day 1", "Day 2", "Start Time", "End Time", "Location"));
+        System.out.println(String.format("%-15s\t%-20s\t%-20s\t%-15s\t%-10s\t%-10s\t%-20s\t%-20s\t%-10s",
+                "Course ID","Title", "Instructor", "Max-Students", "Day 1", "Day 2", "Start Time", "End Time", "Location"));
         for (int i = 0; i < 170; i++) {
             System.out.print("_");
         }
@@ -1060,8 +1064,9 @@ public class Homepage {
             String start_time = rs.getString("start_time");
             String end_time = rs.getString("end_time");
             String loc = rs.getString("location");
-            System.out.println(String.format("%-20s\t%-20s\t%-15s\t%-10s\t%-10s\t%-20s\t%-20s\t%-10s\n",
-                    title, instr_name, max_student, day, day2, start_time, end_time, loc));
+            String course_id = rs.getString("course_id");
+            System.out.println(String.format("%-15s\t%-20s\t%-20s\t%-15s\t%-10s\t%-10s\t%-20s\t%-20s\t%-10s\n",
+                    course_id,title, instr_name, max_student, day, day2, start_time, end_time, loc));
         }
       
     }
@@ -1178,20 +1183,16 @@ public class Homepage {
                     System.out.println("Press 1. to enroll into Waitlist");
                     System.out.println("Press 0 to go back to previous menu");
                     int i = in.nextInt();
-                    if(i==1)
-                    {
-                    preparedStatement.setString(6, "Waitlist");
-                    if(preparedStatement.executeQuery()!=null)
-                        System.out.println("Added to Course Waitlist");
-                    else
-                        System.out.println("Error Adding Course");
-                    }
-                    else if(i==0)
-                    {
+                    if (i == 1) {
+                        preparedStatement.setString(6, "Waitlist");
+                        if (preparedStatement.executeQuery() != null) {
+                            System.out.println("Added to Course Waitlist");
+                        } else {
+                            System.out.println("Error Adding Course");
+                        }
+                    } else if (i == 0) {
                         welcomeStudent("Student", studentId);
-                    }
-                    else
-                    {
+                    } else {
                         System.out.println("Inavlid Input");
                         welcomeStudent("Student", studentId);
                     }
@@ -1240,6 +1241,34 @@ public class Homepage {
             System.out.println(String.format("%-10s\t%-7s\n", course_id, status));
         }
     }
+    
+        
+    /* 04/3/2017 dsuri - Danish Suri
+     Used by admin to enforce drop deadline*/
+    public static void enforceDropDeadline() throws Exception {
+        System.out.println("\n\nAre you sure you want to enforce drop deadline? y/n");
+        String s = in.next();
+        if(s.equalsIgnoreCase("y"))
+        {
+            query = "DELETE FROM ENROLLMENT WHERE STATUS = 'Waitlist'";
+            preparedStatement = conn.prepareStatement(query);
+            preparedStatement.executeUpdate();
+            
+                query = "DELETE "
+                        + "FROM ENROLLMENT "
+                        + "WHERE STUDENT_ID "
+                        + "IN (SELECT STUDENT_ID FROM STUDENT WHERE PENDING_BILL > 0)";
+                preparedStatement = conn.prepareStatement(query);
+                preparedStatement.executeQuery();
+                System.out.println("Enforcement Successfull");
+                welcomeAdmin(adminName, adminUsername);
+          
+        }
+        else
+        {
+            welcomeAdmin(adminName, adminUsername);
+        }
+    }
 
     /* 03/30/2017 dsuri - Danish Suri
      Helper Method called after Admin Logins*/
@@ -1254,6 +1283,7 @@ public class Homepage {
         System.out.println("4 to View or Add Course Offering");
         System.out.println("5 to View Pending Requests");
         System.out.println("6 to View/Edit Profile ");
+        System.out.println("7 to Enforce Drop Deadline ");
         int option = in.nextInt();
         switch (option) {
             case 1:
@@ -1327,6 +1357,12 @@ public class Homepage {
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
+            case 7:
+                try {
+                    enforceDropDeadline();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
 
             default:
         }
@@ -1391,7 +1427,11 @@ public class Homepage {
      * This method shall be used to enroll the courses
      * */
     private static void enrollCourse(String studentId) {
-        System.out.println("Enroll for new Course");
+        System.out.println("Enroll for new Course From Courses Shown Below\n\n");
+        try {
+            viewAllCurrentCourses();
+        } catch (Exception e) {
+        }
         System.out.println("Enter Course ID: ");
         String courseId = in.next(); // TO DO: Input from user
         System.out.println("Enter Instructor ID:");
@@ -1413,21 +1453,26 @@ public class Homepage {
             String outputStr = callableStatement.getString(9);
             if(status==0){
                 checkEnrollmentStatus(courseId, studentId, instrID);
+                updateCredits(studentId);
+                updateBill(studentId);
             }else if(status==1){
                 System.out.println("Error: could not register for the course");
                 System.out.println(outputStr);
-                return;
             }else if(status==2){
                 System.out.println(outputStr);
-                return;
+            }
+            System.out.println("Press 0 to Go Back to previous menu");
+            int i = in.nextInt();
+            if(i==0)
+            {
+                welcomeStudent(studentName, studentId);
             }
         }catch(Exception e){
             e.printStackTrace();
         }
     }
     
-    private static void initGrades()
-    {
+    private static void initGrades() {
         try {
             query = "SELECT * FROM GRADING_SYSTEM";
             preparedStatement = conn.prepareStatement(query);
