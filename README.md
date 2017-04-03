@@ -18,4 +18,4 @@ Report: [Link](https://docs.google.com/document/d/1CjkWKXYAQ6Ku9q1dr2YuRNicrPCz_
 * Username: harry
 * password: harry
 
-![ER-Diagram](ERD1.png)
+![ER-Diagram](https://github.com/VivekBhat/DBMS-Deliverable/blob/master/Resources/ERD1.png)
