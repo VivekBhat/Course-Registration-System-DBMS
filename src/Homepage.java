@@ -1436,7 +1436,54 @@ public class Homepage {
         String courseId = in.next(); // TO DO: Input from user
         System.out.println("Enter Instructor ID:");
         String instrID = in.next(); // TO DO: Input from user
-        String query = "{call isEnrollable(?,?,?,?,?,?,?,?,?)}";
+        //checking conflicting schedule
+        String query = "select * from schedule where course_id like ? and session_id like ?";
+        try{
+            preparedStatement = conn.prepareStatement(query);
+            preparedStatement.setString(1, courseId);
+            preparedStatement.setString(2, CURR_SESSION);
+            rs = preparedStatement.executeQuery();
+            double startTime_new=0.0;
+            double endTime_new=0.0;
+            String day1_new = null;
+            String day2_new = null;
+            
+            while(rs.next()){
+                startTime_new = Double.parseDouble(rs.getString("start_time").replace(':', '.'));
+                endTime_new = Double.parseDouble(rs.getString("end_time").replace(':', '.'));
+                day1_new = rs.getString("day");
+                day2_new = rs.getString("day2");
+            }
+            
+            query = "select * from schedule where course_id in (select course_id from enrollment where student_id like ?) and session_id like ?";
+            preparedStatement = conn.prepareStatement(query);
+            preparedStatement.setString(1, studentId);
+            preparedStatement.setString(2, CURR_SESSION);
+            
+            rs = preparedStatement.executeQuery();
+            double startTime = 0.0;
+            double endTime = 0.0;
+            String day1 = null;
+            String day2 = null;
+            String crsId;
+            while (rs.next()) {
+                startTime = Double.parseDouble(rs.getString("start_time").replace(':', '.'));
+                endTime = Double.parseDouble(rs.getString("end_time").replace(':', '.'));
+                crsId = rs.getString("course_id");
+                day1 = rs.getString("day");
+                day2 = rs.getString("day2");
+                if(day1_new.equals(day1) || day2_new.equals(day1) || day1_new.equals(day2) || day2_new.equals(day2)){
+                    if((startTime_new<startTime && endTime_new>startTime) || (startTime_new<endTime && endTime_new>endTime)){
+                        System.out.println("Error: Not able to enroll as this course is conflicting with current course "+courseId);
+                        return;
+                    }
+                }
+            }
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+        
+        query = "{call isEnrollable(?,?,?,?,?,?,?,?,?)}";
         try{
             callableStatement= conn.prepareCall(query);
             callableStatement.setString(1, studentId);
