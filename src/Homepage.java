@@ -5,6 +5,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.HashMap;
 import java.util.Scanner;
 
 public class Homepage {
@@ -16,7 +17,9 @@ public class Homepage {
     public static CallableStatement callableStatement;
     public static String query;
     public static final String CURR_SESSION = "Spring 2017";
-
+    public static String studentName, adminName,adminUsername, studentId;
+    private static final HashMap<String,Float> grades = new HashMap<>();
+    
     public static void printWelcome() {
         System.out.println("***************************************");
         System.out.println("Welcome to CSC 540 Project Spring 2017");
@@ -59,8 +62,12 @@ public class Homepage {
                 }
             }
             if (admin) {
+                adminUsername = username;
+                adminName = name;
                 welcomeAdmin(name, username);
             } else {
+                studentId = stu_id;
+                studentName = name;
                 welcomeStudent(name, stu_id);
             }
             // else
@@ -124,6 +131,7 @@ public class Homepage {
         preparedStatement.setInt(11, 0);
         if (preparedStatement.executeUpdate() == 1) {
             System.out.println("Student Entered Successfully");
+            welcomeAdmin(adminName, username);
         } else {
             System.out.println("Error Encountered");
         }
@@ -138,34 +146,106 @@ public class Homepage {
         System.out.println("*********************");
         System.out.print("Enter Student ID: ");
         String stu_id = in.next();
-        query = "SELECT s.f_name, s.l_name, s.DOB, s.EMAIL,e.course_id,e.grade " + "FROM enrollment e, student s "
-                + "WHERE s.STUDENT_ID=? and s.STUDENT_ID=e.STUDENT_ID";
+//        query = "SELECT s.f_name, s.l_name, s.DOB, s.EMAIL,e.course_id,e.grade " + "FROM enrollment e, student s "
+//                + "WHERE s.STUDENT_ID=? and s.STUDENT_ID=e.STUDENT_ID";
+        query = "SELECT f_name, l_name, DOB, EMAIL, residency, class_level, gpa, pending_bill " 
+                +"FROM student "
+                +"WHERE STUDENT_ID=?";
         preparedStatement = conn.prepareStatement(query);
         preparedStatement.setString(1, stu_id);
         rs = preparedStatement.executeQuery();
         if (rs.next()) {
-            String name = rs.getString("f_name") + " " + rs.getString("l_name");
+            String fname = rs.getString("f_name");
+            String lname = rs.getString("l_name");
             String email = rs.getString("email");
             String dob = rs.getDate("dob").toString();
-            String course_id = rs.getString("course_id");
-            String grade = rs.getString("grade");
-            System.out.println(String.format("%-20s\t%-20s\t%-15s\t%-6s\t%-5s", name, email, dob, course_id, grade));
-            System.out.println("Press 1 to Enter Grdaes for " + name + "\nPress 0 to exit");
+            String resi = rs.getString("residency");
+            String class_level = rs.getString("class_level");
+            String gpa = rs.getFloat("gpa")+"";
+            int pendingBill = rs.getInt("pending_bill");
+            System.out.println("First Name: "+fname);
+            System.out.println("Last Name: "+lname);
+            System.out.println("D.O.B (mm-dd-yyyy): "+dob);
+            System.out.println("Student's Level: "+class_level);
+            System.out.println("Residency: "+resi);
+            if(pendingBill>0)
+                System.out.println("Pending Bill: "+pendingBill);
+            System.out.println("GPA: "+gpa);    
+//            String course_id = rs.getString("course_id");
+//            String grade = rs.getString("grade");
+            //System.out.println("Press 1 to Enter Grdaes for " + fname+" "+lname + "\nPress 0 to exit");
+            System.out.println("\n\nPress 0 to Exit");
+            System.out.println("Press 1 to View/Add Grades");
             int input = in.nextInt();
-            if (input == 0) {
-                viewStudent();
-            } else if (input == 1) {
-                enterGrades(stu_id);
-            } else {
+            if (input == 0) 
+            {
+                welcomeAdmin(adminName, adminUsername);
+            }
+            else if(input == 1)
+                viewGrades(stu_id, fname+" "+lname);
+            else 
+            {
                 System.out.println("Invalid option");
-                viewStudent();
+                welcomeStudent(studentName, studentId);
             }
 
-        } else {
-            System.out.println("No Such Student Exists");
+        } 
+        else 
+        {
+            System.out.println("\n\nNo Such Student Exists");
+            viewStudent();
         }
     }
 
+    /* 03/30/2017 dsuri - Danish Suri
+     This method is used by Admin to view a Student's grade */
+    
+    public static void viewGrades(String studentId, String name) throws Exception {
+        query = "SELECT e.course_id,e.grade " + 
+                "FROM enrollment e, student s "
+               + "WHERE s.STUDENT_ID=? and s.STUDENT_ID=e.STUDENT_ID";
+        boolean flag = false;
+        preparedStatement = conn.prepareStatement(query);
+        preparedStatement.setString(1, studentId);
+        rs = preparedStatement.executeQuery();
+        System.out.println("Courses Enrolled by "+name);
+        System.out.println(String.format("\n\n%-10s\t%-15s\t","Course ID","Letter Grade"));
+        while(rs.next())
+        {
+            flag = true;
+            String course_id = rs.getString("course_id");
+            String grade = rs.getString("grade");
+            System.out.println(String.format("%-10s\t%-15s\t",course_id,grade));
+        }
+        if(!flag)
+        {
+            System.out.println("\n\nNo Courses Available");
+            System.out.println("Press 0 to Go to previous menu");
+        }
+        else
+        {
+            System.out.println("\n\nPress 0 to Go to previous menu");
+            System.out.println("Press 1 to enter grades");
+        }
+        int input=0;
+        try {
+            input = in.nextInt();
+        } catch (Exception e) {
+            System.out.println("Invalid Option");
+            viewGrades(studentId, name);
+        }
+
+        if(input==0)
+            viewStudent();
+        else if(input == 1)
+            enterGrades(studentId);
+        else
+        {
+            System.out.println("Invalid Option");
+            viewGrades(studentId, name);
+        }
+    }
+    
     /* 03/30/2017 dsuri - Danish Suri
      This method is used by Admin to add Grades of a Student in the courses they have enrolled */
     public static void enterGrades(String studentId) throws Exception {
@@ -195,11 +275,46 @@ public class Homepage {
         preparedStatement.setString(3, c_id);
         if (preparedStatement.executeUpdate() == 1) {
             System.out.println("Grades Entered");
+            updateGPA(studentId);
         } else {
             System.out.println("Error Entering Grades. Please Try Again");
         }
         viewStudent();
 
+    }
+    
+    /* 03/30/2017 dsuri - Danish Suri
+     This is helper method to update GPA */
+    
+    public static void updateGPA(String studentID) throws Exception {
+        float gpa, num=0;
+        int credits = 0;
+        query = "SELECT GRADE, CREDITS FROM ENROLLMENT WHERE STUDENT_ID = ? AND GRADE <> 'NA'";
+        preparedStatement = conn.prepareStatement(query);
+        preparedStatement.setString(1, studentID);
+        rs = preparedStatement.executeQuery();
+        while(rs.next())
+        {
+            
+            int c = rs.getInt("credits");
+            float g= grades.get(rs.getString("grade"));
+            num = num+(c*g);
+            credits+=c;
+        }
+        query = "UPDATE STUDENT SET GPA = ? WHERE STUDENT_ID = ?";
+        preparedStatement = conn.prepareStatement(query);
+        System.out.println(num+" "+credits);
+        gpa = num/credits;
+        preparedStatement.setFloat(1, gpa);
+        preparedStatement.setString(2, studentID);
+        if(preparedStatement.executeUpdate()==1)
+        {
+            System.out.println("Update Successfull");
+        }
+        else
+        {
+            System.out.println("Error Updating GPA");
+        }
     }
 
     /* 03/30/2017 dsuri - Danish Suri
@@ -498,6 +613,51 @@ public class Homepage {
         }
 
     }
+    
+    /* 04/03/2017 dsuri - Danish Suri
+     This method is used Student to drop courses*/
+    private static void dropCourse(String studentID, String courseID) throws Exception {
+        query = "DELETE FROM ENROLLMENT WHERE STUDENT_ID =? AND COURSE_ID = ?";
+        preparedStatement = conn.prepareStatement(query);
+        preparedStatement.setString(1, studentID);
+        preparedStatement.setString(2, courseID);
+        if(preparedStatement.executeUpdate()==1)
+        {
+            updateCredits(studentID);
+            if(updateBill(studentID)==1)
+                System.out.println("Course Dropped Successfully");
+            else
+                System.out.println("Error Dropping Course");
+        }
+        
+    }
+    
+    /* 04/03/2017 dsuri - Danish Suri
+     This is a helper method to update current credits of a student*/
+    
+    private static void updateCredits(String studentId) throws Exception {
+        query = "SELECT CREDITS FROM ENROLLMENT WHERE STUDENT_ID =? AND STATUS='Enrolled' AND SESSION_ID =?";
+        preparedStatement = conn.prepareStatement(query);
+        preparedStatement.setString(1, studentId);
+        preparedStatement.setString(2, CURR_SESSION);
+        rs = preparedStatement.executeQuery();
+        int credits = 0;
+        while(rs.next())
+        {
+            credits += rs.getInt("CREDITS");
+        }
+       
+        query = "UPDATE STUDENT SET CURRENT_CREDITS = ?";
+        preparedStatement = conn.prepareStatement(query);
+        preparedStatement.setInt(1, credits);
+        if (preparedStatement.executeUpdate() == 1) 
+        {
+            return;
+        }
+        System.out.println("Error Updating Credits");
+        
+        
+    }
 
     /*
      * 03/31/2017 jkumar3 - Jitin Kumar This method shall be used by
@@ -779,7 +939,7 @@ public class Homepage {
         if (ip == 1) {
             updateStudentProfile(student_id);
         } else if (ip == 0) {
-            welcomeStudent(rs.getString("f_name") + " " + rs.getString("l_name"), student_id);
+            welcomeStudent(studentName, student_id);
         } else {
             System.out.println("Invalid Option");
             viewStudentProfile(student_id);
@@ -818,7 +978,7 @@ public class Homepage {
      This method is used by Student to view their Enrolled Courses*/
     public static void viewMyCourses(String student_id) throws Exception {
 
-        query = "SELECT c.title,e.grade,i.instr_name, e.session_id "
+        query = "SELECT c.course_id,c.title,e.grade,i.instr_name, e.session_id "
                 + "FROM enrollment e,student s, courses c, instructor i "
                 + "WHERE s.STUDENT_ID=? "
                 + "and s.STUDENT_ID=e.STUDENT_ID "
@@ -834,7 +994,7 @@ public class Homepage {
             System.out.print("_");
         }
         System.out.println("");
-        System.out.println(String.format("%-20s\t%-10s\t%-30s\t%-15s", "Course Name",
+        System.out.println(String.format("%-10s\t%-20s\t%-10s\t%-30s\t%-15s","Course ID", "Course Name",
                 "Grade",
                 "Instructor Name",
                 "Session"));
@@ -849,8 +1009,22 @@ public class Homepage {
             String grade = rs.getString("grade");
             String instr_name = rs.getString("instr_name");
             String session = rs.getString("session_id");
-            System.out.println(String.format("%-20s\t%-10s\t%-30s\t%-15s\n", course_name, grade, instr_name, session));
+            String cid = rs.getString("course_id");
+            System.out.println(String.format("%-10s\t%-20s\t%-10s\t%-30s\t%-15s\n",cid, course_name, grade, instr_name, session));
         }
+        System.out.println("\n\n");
+        System.out.println("Press 1. Drop a course");
+        System.out.println("Press 0  to go back");
+        int inps = in.nextInt();
+        if(inps == 1)
+        {
+            in.nextLine();
+            System.out.println("Enter Course ID: ");
+            String cid = in.next();
+            dropCourse(student_id, cid);            
+        }
+        else
+            welcomeStudent(studentName, student_id);
     }
 
     /* 03/31/2017 dsuri - Danish Suri
@@ -889,6 +1063,7 @@ public class Homepage {
             System.out.println(String.format("%-20s\t%-20s\t%-15s\t%-10s\t%-10s\t%-20s\t%-20s\t%-10s\n",
                     title, instr_name, max_student, day, day2, start_time, end_time, loc));
         }
+      
     }
 
     /* 03/31/2017 dsuri - Danish Suri
@@ -994,27 +1169,61 @@ public class Homepage {
                 preparedStatement.setString(1, studentId);
                 preparedStatement.setString(2, courseId);
                 preparedStatement.setString(3, instrId);
-                preparedStatement.setString(4, "A");
+                preparedStatement.setString(4, "NA");
                 preparedStatement.setInt(7, 3);
                 preparedStatement.setString(5, CURR_SESSION);
                 if(count >= total)
                 {
+                    System.out.println("No More Seats Available.\n");
+                    System.out.println("Press 1. to enroll into Waitlist");
+                    System.out.println("Press 0 to go back to previous menu");
+                    int i = in.nextInt();
+                    if(i==1)
+                    {
                     preparedStatement.setString(6, "Waitlist");
                     if(preparedStatement.executeQuery()!=null)
                         System.out.println("Added to Course Waitlist");
                     else
                         System.out.println("Error Adding Course");
+                    }
+                    else if(i==0)
+                    {
+                        welcomeStudent("Student", studentId);
+                    }
+                    else
+                    {
+                        System.out.println("Inavlid Input");
+                        welcomeStudent("Student", studentId);
+                    }
+                        
                 }
                 else
                 {
                     preparedStatement.setString(6, "Enrolled");
                     if(preparedStatement.executeQuery()!=null)
-                        System.out.println("Enrollment Successfull");
+                    {
+                        if(updateBill(studentId)==1)
+                            System.out.println("Enrollment Successfull");
+                    }
                     else
                         System.out.println("Error Adding Course");
                 }
             }
         }
+    }
+   
+    /* 04/03/2017 dsuri - Danish Suri
+     This is a helper method to update bill*/
+    
+    public static int updateBill(String studentId) throws Exception {
+        query = " UPDATE STUDENT s "
+                + "Set s.PENDING_BILL = "
+                + "(SELECT COST_CREDIT FROM BILLING "
+                + "WHERE CLASS_LEVEL= s.CLASS_LEVEL and RESIDENCY = s.RESIDENCY)*s.CURRENT_CREDITS "
+                + "WHERE s.STUDENT_ID = ?";
+        preparedStatement = conn.prepareStatement(query);
+        preparedStatement.setString(1, studentId);
+        return preparedStatement.executeUpdate();
     }
 
     /* 03/31/2017 dsuri - Danish Suri
@@ -1176,7 +1385,7 @@ public class Homepage {
 
         }
     }
-
+    
     /*
      * 02/04/2017 - Jitin Kumar
      * This method shall be used to enroll the courses
@@ -1216,10 +1425,23 @@ public class Homepage {
             e.printStackTrace();
         }
     }
-
     
+    private static void initGrades()
+    {
+        try {
+            query = "SELECT * FROM GRADING_SYSTEM";
+            preparedStatement = conn.prepareStatement(query);
+            rs = preparedStatement.executeQuery();
+            while (rs.next()) {
+                grades.put(rs.getString("grade"), rs.getFloat("gpa"));
+            }
+        } catch (Exception e) {
+        }
+    }
+
     public static void main(String[] args) {
         printWelcome();
+        initGrades();
         loginUser();
     }
 
