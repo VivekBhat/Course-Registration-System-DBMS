@@ -437,7 +437,7 @@ public class Homepage {
 	 * 03/30/2017 jkumar3 - Jitin Kumar This method shall be used by
 	 * administrator to view all courses
 	 */
-	private static void viewCourses() {
+	private static void viewCourses(String adminName, String userName) {
 		System.out.println("Displaying all courses:\n");
 		try {
 			String selectAllCourses = "Select * from Courses";
@@ -455,10 +455,11 @@ public class Homepage {
 
 		} catch (SQLException e) {
 			e.printStackTrace();
-		} finally {
-			close(conn);
-			close(preparedStatement);
-			close(rs);
+		}
+		System.out.println("Press 0 to Go Back to previous menu");
+		int i = in.nextInt();
+		if (i == 0) {
+			viewOrAddCourse(adminName, userName);
 		}
 	}
 
@@ -466,7 +467,7 @@ public class Homepage {
 	 * 03/30/2017 jkumar3 - Jitin Kumar This method shall be used by
 	 * administrator to view a course by id
 	 */
-	private static void viewCoursesById() {
+	private static void viewCoursesById(String adminName, String userName) {
 		// System.out.println("Enter the Course ID");
 		System.out.println("Displaying course by Course ID");
 		System.out.println("Enter Course ID: ");
@@ -490,11 +491,17 @@ public class Homepage {
 			int curr = rs.getRow();
 			if (curr < 1) {
 				System.out.println("No course matching this Course_ID. Please try again");
-				viewCoursesById();
+				viewCoursesById(adminName, userName);
 			}
 
 		} catch (SQLException e) {
 			e.printStackTrace();
+		}
+
+		System.out.println("Press 0 to Go Back to previous menu");
+		int i = in.nextInt();
+		if (i == 0) {
+			viewOrAddCourse(adminName, userName);
 		}
 	}
 
@@ -502,7 +509,7 @@ public class Homepage {
 	 * 03/30/2017 jkumar3 - Jitin Kumar This method shall be used by
 	 * administrator to add a new course
 	 */
-	private static void addCourse() {
+	private static void addCourse(String adminName, String userName) {
 		System.out.println("Adding new Course");
 		System.out.println("Enter Course ID: ");
 		String courseID = in.next(); // TO DO: Input from user
@@ -590,7 +597,7 @@ public class Homepage {
 			preparedStatement.setString(7, dept);
 			preparedStatement.setString(8, splPermStr);
 			int result = preparedStatement.executeUpdate();
-			System.out.println("insert course result = " + result);
+			// System.out.println("insert course result = " + result);
 			/* adding prerequisite course */
 			if (preCID != null && preCID.length() > 0) {
 				String insertPrerCourseSQL = "insert into PREREQ(PREREQ_CID,GRADE_REQ,COURSE_ID) values(?,?,?)";
@@ -608,7 +615,11 @@ public class Homepage {
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
-
+		System.out.println("Press 0 to Go Back to previous menu");
+		int i = in.nextInt();
+		if (i == 0) {
+			viewOrAddCourse(adminName, userName);
+		}
 	}
 
 	/*
@@ -679,15 +690,13 @@ public class Homepage {
 				int waitlistCount = rs.getInt("WAITLIST");
 				System.out.println(String.format("| %-10s\t | \t %-10s\t | \t %-15s | \t %-10s | \t %-10s | \t %-10s |",
 						courseId, instrId, sessionId, scheduleId, maxNumOfStudents, waitlistCount));
+
 			}
 
 		} catch (SQLException e) {
 			e.printStackTrace();
-		} finally {
-			close(conn);
-			close(preparedStatement);
-			close(rs);
 		}
+		return;
 	}
 
 	/*
@@ -1277,28 +1286,9 @@ public class Homepage {
 			}
 			break;
 		case 3:
-			try {
-				System.out.println("Press 1 to View All Courses");
-				System.out.println("Press 2 to Search a Course by Course ID");
-				System.out.println("Press 3 to Add a new Course");
-				int choice = in.nextInt();
-				switch (choice) {
-				case 1:
-					viewCourses();
-					break;
-				case 2:
-					viewCoursesById();
-					break;
-				case 3:
-					addCourse();
-					break;
-				default:
-					System.out.println("Please Enter a valid choice");
-					welcomeAdmin(adminName, userName);
-				}
-			} catch (Exception e) {
+			viewOrAddCourse(adminName, userName);
 
-			}
+			break;
 		case 4:
 			try {
 				System.out.println("Press 1 to View Course offering");
@@ -1341,6 +1331,31 @@ public class Homepage {
 			}
 
 		default:
+		}
+	}
+
+	private static void viewOrAddCourse(String adminName, String userName) {
+		try {
+			System.out.println("Press 1 to View All Courses");
+			System.out.println("Press 2 to Search a Course by Course ID");
+			System.out.println("Press 3 to Add a new Course");
+			int choice = in.nextInt();
+			switch (choice) {
+			case 1:
+				viewCourses(adminName, userName);
+				break;
+			case 2:
+				viewCoursesById(adminName, userName);
+				break;
+			case 3:
+				addCourse(adminName, userName);
+				break;
+			default:
+				System.out.println("Please Enter a valid choice");
+				welcomeAdmin(adminName, userName);
+			}
+		} catch (Exception e) {
+
 		}
 	}
 
