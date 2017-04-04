@@ -626,20 +626,50 @@ public class Homepage {
 	 * 04/03/2017 dsuri - Danish Suri This method is used Student to drop
 	 * courses
 	 */
-	private static void dropCourse(String studentID, String courseID) throws Exception {
-		query = "DELETE FROM ENROLLMENT WHERE STUDENT_ID =? AND COURSE_ID = ?";
-		preparedStatement = conn.prepareStatement(query);
-		preparedStatement.setString(1, studentID);
-		preparedStatement.setString(2, courseID);
-		if (preparedStatement.executeUpdate() == 1) {
-			updateCredits(studentID);
-			if (updateBill(studentID) == 1)
-				System.out.println("Course Dropped Successfully");
-			else
-				System.out.println("Error Dropping Course");
-		}
-
-	}
+	 private static void dropCourse(String studentID, String courseID) throws Exception {
+        
+        query = "SELECT DROP_DEAD FROM SESSIONS WHERE SESSION_ID=?";
+        preparedStatement = conn.prepareStatement(query);
+        preparedStatement.setString(1, CURR_SESSION);
+        rs = preparedStatement.executeQuery();
+        Date dead_date = null;
+        if(rs.next())
+            dead_date = rs.getDate("drop_dead");
+        Date curr_date = new Date(System.currentTimeMillis());
+        if(curr_date.after(dead_date))
+        {
+        query = "DELETE FROM ENROLLMENT WHERE STUDENT_ID =? AND COURSE_ID = ?";
+        preparedStatement = conn.prepareStatement(query);
+        preparedStatement.setString(1, studentID);
+        preparedStatement.setString(2, courseID);
+        if(preparedStatement.executeUpdate()==1)
+        {
+            updateCredits(studentID);
+            if(updateBill(studentID)==1)
+                System.out.println("Course Dropped Successfully");
+            else
+                System.out.println("Error Dropping Course");
+        }
+        }
+        else
+        {
+            System.out.println("Drop Deadline has been passed");
+            viewMyCourses(studentId);
+        }
+        System.out.println("Press 0 to go back to previous menu");
+        int i = in.nextInt();
+        if(i==0)
+        {
+            viewMyCourses(studentId);
+        }
+        else
+        {
+            System.out.println("Invalid Option");
+            viewMyCourses(studentId);
+        }
+        
+    }
+    
 
 	/*
 	 * 04/03/2017 dsuri - Danish Suri This is a helper method to update current
@@ -917,13 +947,13 @@ public class Homepage {
 		preparedStatement.setString(5, adminUsername);
 		if (preparedStatement.executeUpdate() == 1) {
 			System.out.println("Details Updated Successfully\n\n");
-			viewAdminProfile(adminUsername, null);
+			viewAdminProfile(adminName, adminUsername);
 		} else {
 			System.out.println("Error Updating Table. Please Try Again Later\n\n");
-			viewAdminProfile(adminUsername, null);
+			viewAdminProfile(adminName, adminUsername);
 		}
-		
-		
+
+
 	}
 
 	/*
