@@ -1000,7 +1000,7 @@ public class Homepage {
 			System.out.print("_");
 		}
 		System.out.println("");
-		System.out.println(String.format("%-10s\t%-20s\t%-10s\t%-30s\t%-15s", "Course ID", "Course Name", "Grade",
+		System.out.println(String.format("%-10s\t%-40s\t%-10s\t%-30s\t%-15s", "Course ID", "Course Name", "Grade",
 				"Instructor Name", "Session"));
 		for (int i = 0; i < 99; i++) {
 			System.out.print("_");
@@ -1015,7 +1015,7 @@ public class Homepage {
 			String session = rs.getString("session_id");
 			String cid = rs.getString("course_id");
 			System.out.println(
-					String.format("%-10s\t%-20s\t%-10s\t%-30s\t%-15s\n", cid, course_name, grade, instr_name, session));
+					String.format("%-10s\t%-40s\t%-10s\t%-30s\t%-15s\n", cid, course_name, grade, instr_name, session));
 		}
 		System.out.println("\n\n");
 		System.out.println("Press 1. Drop a course");
