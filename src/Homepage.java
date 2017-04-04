@@ -120,8 +120,8 @@ public class Homepage {
 		String date = in.next();
 
 		Date dob = Date.valueOf(date);
-		System.out.println("Please enter a valid input in yyyy-mm-dd format");
-		System.out.println(dob);
+//		System.out.println("Please enter a valid input in yyyy-mm-dd format");
+//		System.out.println(dob);
 
 		query = "insert into STUDENT(STUDENT_ID,F_NAME, l_name, gpa, email, password, "
 				+ "current_credits,residency, class_level, department, "
@@ -162,7 +162,8 @@ public class Homepage {
 		// query = "SELECT s.f_name, s.l_name, s.DOB,
 		// s.EMAIL,e.course_id,e.grade " + "FROM enrollment e, student s "
 		// + "WHERE s.STUDENT_ID=? and s.STUDENT_ID=e.STUDENT_ID";
-		query = "SELECT f_name, l_name, DOB, EMAIL, residency, class_level, gpa, pending_bill " + "FROM student "
+		query = "SELECT f_name, l_name, DOB, EMAIL, residency, class_level, gpa, pending_bill " 
+		+ "FROM student "
 				+ "WHERE STUDENT_ID=?";
 		preparedStatement = conn.prepareStatement(query);
 		preparedStatement.setString(1, stu_id);
@@ -626,42 +627,50 @@ public class Homepage {
 	 * 04/03/2017 dsuri - Danish Suri This method is used Student to drop
 	 * courses
 	 */
-	private static void dropCourse(String studentID, String courseID) throws Exception {
+ private static void dropCourse(String studentID, String courseID) throws Exception {
+        
+        query = "SELECT DROP_DEAD FROM SESSIONS WHERE SESSION_ID=?";
+        preparedStatement = conn.prepareStatement(query);
+        preparedStatement.setString(1, CURR_SESSION);
+        rs = preparedStatement.executeQuery();
+        Date dead_date = null;
+        if(rs.next())
+            dead_date = rs.getDate("drop_dead");
+        Date curr_date = new Date(System.currentTimeMillis());
+        if(curr_date.after(dead_date))
+        {
+        query = "DELETE FROM ENROLLMENT WHERE STUDENT_ID =? AND COURSE_ID = ?";
+        preparedStatement = conn.prepareStatement(query);
+        preparedStatement.setString(1, studentID);
+        preparedStatement.setString(2, courseID);
+        if(preparedStatement.executeUpdate()==1)
+        {
+            updateCredits(studentID);
+            if(updateBill(studentID)==1)
+                System.out.println("Course Dropped Successfully");
+            else
+                System.out.println("Error Dropping Course");
+        }
+        }
+        else
+        {
+            System.out.println("Drop Deadline has been passed");
+            viewMyCourses(studentId);
+        }
+        System.out.println("Press 0 to go back to previous menu");
+        int i = in.nextInt();
+        if(i==0)
+        {
+            viewMyCourses(studentId);
+        }
+        else
+        {
+            System.out.println("Invalid Option");
+            viewMyCourses(studentId);
+        }
+        
+    }
 
-		query = "SELECT DROP_DEAD FROM SESSIONS WHERE SESSION_ID=?";
-		preparedStatement = conn.prepareStatement(query);
-		preparedStatement.setString(1, CURR_SESSION);
-		rs = preparedStatement.executeQuery();
-		Date dead_date = null;
-		if (rs.next())
-			dead_date = rs.getDate("drop_dead");
-		Date curr_date = new Date(System.currentTimeMillis());
-		if (curr_date.after(dead_date)) {
-			query = "DELETE FROM ENROLLMENT WHERE STUDENT_ID =? AND COURSE_ID = ?";
-			preparedStatement = conn.prepareStatement(query);
-			preparedStatement.setString(1, studentID);
-			preparedStatement.setString(2, courseID);
-			if (preparedStatement.executeUpdate() == 1) {
-				updateCredits(studentID);
-				if (updateBill(studentID) == 1)
-					System.out.println("Course Dropped Successfully");
-				else
-					System.out.println("Error Dropping Course");
-			}
-		} else {
-			System.out.println("Drop Deadline has been passed");
-			viewMyCourses(studentId);
-		}
-		System.out.println("Press 0 to go back to previous menu");
-		int i = in.nextInt();
-		if (i == 0) {
-			viewMyCourses(studentId);
-		} else {
-			System.out.println("Invalid Option");
-			viewMyCourses(studentId);
-		}
-
-	}
 
 	/*
 	 * 04/03/2017 dsuri - Danish Suri This is a helper method to update current
@@ -939,12 +948,13 @@ public class Homepage {
 		preparedStatement.setString(5, adminUsername);
 		if (preparedStatement.executeUpdate() == 1) {
 			System.out.println("Details Updated Successfully\n\n");
-			viewAdminProfile(adminName, adminUsername);
+			viewAdminProfile(adminUsername, null);
 		} else {
 			System.out.println("Error Updating Table. Please Try Again Later\n\n");
-			viewAdminProfile(adminName, adminUsername);
+			viewAdminProfile(adminUsername, null);
 		}
-
+		
+		
 	}
 
 	/*
@@ -1061,71 +1071,100 @@ public class Homepage {
 	 * 03/31/2017 dsuri - Danish Suri This method is used by Student to view all
 	 * current courses which are being offered
 	 */
-	public static void viewAllCurrentCourses() throws Exception {
-		query = "select c.course_id,c.title, i.instr_name, co.max_student, "
-				+ "sc.day, sc.day2, sc.start_time, sc.end_time, " + "sc.location "
-				+ "from COURSE_OFFERED co, instructor i, courses c, schedule sc " + "where co.session_id = ? and "
-				+ "co.course_id = c.course_id and " + "i.instr_id = co.instr_id and "
-				+ "co.schedule_id = sc.schedule_id " + "and c.class_level = ?";
-		preparedStatement = conn.prepareStatement(query);
-		preparedStatement.setString(1, CURR_SESSION);
-		preparedStatement.setString(2, studentClassLevel);
-		rs = preparedStatement.executeQuery();
-		for (int i = 0; i < 170; i++) {
-			System.out.print("_");
-		}
-		System.out.println("");
-		System.out.println(String.format("%-15s\t%-20s\t%-20s\t%-15s\t%-10s\t%-10s\t%-20s\t%-20s\t%-10s", "Course ID",
-				"Title", "Instructor", "Max-Students", "Day 1", "Day 2", "Start Time", "End Time", "Location"));
-		for (int i = 0; i < 170; i++) {
-			System.out.print("_");
-		}
-		System.out.println("");
-		while (rs.next()) {
-			String title = rs.getString("title");
-			String instr_name = rs.getString("instr_name");
-			String max_student = rs.getString("max_student");
-			String day = rs.getString("day");
-			String day2 = rs.getString("day2");
-			String start_time = rs.getString("start_time");
-			String end_time = rs.getString("end_time");
-			String loc = rs.getString("location");
-			String course_id = rs.getString("course_id");
-			System.out.println(String.format("%-15s\t%-20s\t%-20s\t%-15s\t%-10s\t%-10s\t%-20s\t%-20s\t%-10s\n",
-					course_id, title, instr_name, max_student, day, day2, start_time, end_time, loc));
-		}
+ public static void viewAllCurrentCourses() throws Exception {
+        query = "select c.course_id,c.title, i.instr_name,i.instr_id, co.max_student, "
+                + "sc.day, sc.day2, sc.start_time, sc.end_time, "
+                + "sc.location "
+                + "from COURSE_OFFERED co, instructor i, courses c, schedule sc "
+                + "where co.session_id = ? and "
+                + "co.course_id = c.course_id and "
+                + "i.instr_id = co.instr_id and "
+                + "co.schedule_id = sc.schedule_id "
+                + "and c.class_level = ?";
+        preparedStatement = conn.prepareStatement(query);
+        preparedStatement.setString(1, CURR_SESSION);
+        preparedStatement.setString(2, studentClassLevel);
+        rs = preparedStatement.executeQuery();
+        for (int i = 0; i < 170; i++) {
+            System.out.print("_");
+        }
+        System.out.println("");
+        System.out.println(String.format("%-15s\t%-40s\t%-30s\t%-15s\t%-10s\t%-10s\t%-20s\t%-20s\t%-10s",
+                "Course ID","Title", "Instructor(ID)", "Max-Students", "Day 1", "Day 2", "Start Time", "End Time", "Location"));
+        for (int i = 0; i < 170; i++) {
+            System.out.print("_");
+        }
+        System.out.println("");
+        while (rs.next()) {
+            String title = rs.getString("title");
+            String instr_name = rs.getString("instr_name")+"("+rs.getString("instr_id")+")";
+            String max_student = rs.getString("max_student");
+            String day = rs.getString("day");
+            String day2 = rs.getString("day2");
+            String start_time = rs.getString("start_time");
+            String end_time = rs.getString("end_time");
+            String loc = rs.getString("location");
+            String course_id = rs.getString("course_id");
+            System.out.println(String.format("%-15s\t%-40s\t%-30s\t%-15s\t%-10s\t%-10s\t%-20s\t%-20s\t%-10s\n",
+                    course_id,title, instr_name, max_student, day, day2, start_time, end_time, loc));
+        }
+        
+        System.out.println("Press 0 to go to previous menu");
+        int i = in.nextInt();
+        if(i==0)
+        {
+            welcomeStudent(studentName, studentId);
+        }
+        else
+        {
+            viewAllCurrentCourses();
+        }
+      
+    }
 
-	}
 
 	/*
 	 * 03/31/2017 dsuri - Danish Suri This method is used by Student to view
 	 * their Grades and GPA
 	 */
-	public static void displayGrades(int option, String student_id) throws Exception {
-		if (option == 1) {
-			query = "select e.course_id,e.grade " + "from enrollment e, student s "
-					+ "where s.STUDENT_ID=? and s.STUDENT_ID=e.STUDENT_ID";
-			preparedStatement = conn.prepareStatement(query);
-			preparedStatement.setString(1, student_id);
-			rs = preparedStatement.executeQuery();
-			System.out.println(String.format("\n%-10s\t%-7s", "Course ID", "Grade"));
-			while (rs.next()) {
-				String course_id = rs.getString("course_id");
-				String grade = rs.getString("grade");
-				System.out.println(String.format("%-10s\t%-7s\n", course_id, grade));
-			}
-		} else if (option == 2) {
-			query = "select GPA from student where student_id=?";
-			preparedStatement = conn.prepareStatement(query);
-			preparedStatement.setString(1, student_id);
-			rs = preparedStatement.executeQuery();
-			if (rs.next()) {
-				System.out.println("Current GPA: " + rs.getFloat("gpa"));
-			}
-		} else {
-			System.out.println("Invalid Option");
-		}
-	}
+    public static void displayGrades(int option, String student_id) throws Exception {
+        if (option == 1) {
+            query = "select e.course_id,e.grade "
+                    + "from enrollment e, student s "
+                    + "where s.STUDENT_ID=? and s.STUDENT_ID=e.STUDENT_ID";
+            preparedStatement = conn.prepareStatement(query);
+            preparedStatement.setString(1, student_id);
+            rs = preparedStatement.executeQuery();
+            System.out.println(String.format("\n%-10s\t%-7s", "Course ID", "Grade"));
+            while (rs.next()) {
+                String course_id = rs.getString("course_id");
+                String grade = rs.getString("grade");
+                System.out.println(String.format("%-10s\t%-7s\n", course_id, grade));
+            }
+        } else if (option == 2) {
+            query = "select GPA from student where student_id=?";
+            preparedStatement = conn.prepareStatement(query);
+            preparedStatement.setString(1, student_id);
+            rs = preparedStatement.executeQuery();
+            if (rs.next()) {
+                System.out.println("Current GPA: " + rs.getFloat("gpa"));
+            }
+        } else {
+            System.out.println("Invalid Option");
+        }
+        System.out.println("Press 0 to go back to previous menu");
+        int i  = in.nextInt();
+        if(i==0)
+        {
+            welcomeStudent(studentName, student_id);
+        }
+        else
+        {
+            System.out.println("Invalid Option");
+            displayGrades(option, student_id);
+        }
+    }
+
 
 	/*
 	 * 03/31/2017 dsuri - Danish Suri This method is used by Student to view
@@ -1141,6 +1180,7 @@ public class Homepage {
 		System.out.println("Pending Bill: " + amt);
 		if (amt > 0) {
 			System.out.println("Press 1 to pay bill");
+System.out.println("Press 0 to go back to previous menu");
 			int inp = in.nextInt();
 			if (inp == 1) {
 				System.out.println("Enter Amount");
@@ -1162,6 +1202,8 @@ public class Homepage {
 					viewBill(student_id);
 				}
 			}
+else if(inp==0)
+                welcomeStudent(studentName, student_id);
 		}
 
 	}
@@ -1250,18 +1292,32 @@ public class Homepage {
 	 * 03/31/2017 dsuri - Danish Suri This method is used by Student to view
 	 * their Pending Course Permission Requests Status
 	 */
-	public static void viewPendingCourses(String student_id) throws Exception {
-		query = "SELECT * FROM PENDING_PERMISSIONS WHERE STUDENT_ID = ? and PERMISSION = 'Pending' OR PERMISSION = 'Rejected'";
-		preparedStatement = conn.prepareStatement(query);
-		preparedStatement.setString(1, student_id);
-		rs = preparedStatement.executeQuery();
-		System.out.println(String.format("\n%-10s\t%-15s", "Course ID", "Status"));
-		while (rs.next()) {
-			String course_id = rs.getString("course_id");
-			String status = rs.getString("permission");
-			System.out.println(String.format("%-10s\t%-7s\n", course_id, status));
-		}
-	}
+public static void viewPendingCourses(String student_id) throws Exception {
+        query = "SELECT * FROM PENDING_PERMISSIONS WHERE STUDENT_ID = ? and PERMISSION = 'Pending' OR PERMISSION = 'Rejected'";
+        preparedStatement = conn.prepareStatement(query);
+        preparedStatement.setString(1, student_id);
+        rs = preparedStatement.executeQuery();
+        System.out.println(String.format("\n%-10s\t%-15s", "Course ID", "Status"));
+        while (rs.next()) {
+            String course_id = rs.getString("course_id");
+            String status = rs.getString("permission");
+            System.out.println(String.format("%-10s\t%-7s\n", course_id, status));
+        }
+        
+        System.out.println("Press 0 to go back to previous menu");
+        int  i =in.nextInt();
+        if(i==0)
+        {
+            welcomeStudent(studentName, student_id);
+        }
+        else
+        {
+            System.out.println("Invalid Option Selected");
+            viewPendingCourses(student_id);
+        }
+    }
+    
+
 
 	/*
 	 * 04/3/2017 dsuri - Danish Suri Used by admin to enforce drop deadline
@@ -1445,7 +1501,11 @@ public class Homepage {
 		case 6:
 			System.out.println("Press 1 to View Letter Grades");
 			System.out.println("Press 2 to View GPA");
-			int opt = in.nextInt();
+System.out.println("Press 0 to go back to previous menu");
+                int opt = in.nextInt();
+                if(opt == 0)
+                    welcomeStudent(studentName, student_id);
+
 			displayGrades(opt, student_id);
 			break;
 
