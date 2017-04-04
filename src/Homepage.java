@@ -1123,41 +1123,42 @@ public class Homepage {
      * their Pending Bill and to Pay Bill
      */
     public static void viewBill(String student_id) throws Exception {
-        query = "select pending_bill from student where student_id =?";
-        preparedStatement = conn.prepareStatement(query);
-        preparedStatement.setString(1, student_id);
-        rs = preparedStatement.executeQuery();
-        rs.next();
-        int amt = rs.getInt("pending_bill");
-        System.out.println("Pending Bill: " + amt);
-        if (amt > 0) {
-            System.out.println("Press 1 to pay bill");
-            System.out.println("Press 0 to go back to previous menu");
-            int inp = in.nextInt();
-            if (inp == 1) {
-                System.out.println("Enter Amount");
-                int pay_amt = in.nextInt();
-                if (pay_amt <= amt) {
-                    amt = amt - pay_amt;
-                    query = "update student set pending_bill=? where STUDENT_ID=?";
-                    preparedStatement = conn.prepareStatement(query);
-                    preparedStatement.setInt(1, amt);
-                    preparedStatement.setString(2, student_id);
-                    if (preparedStatement.executeUpdate() == 1) {
-                        System.out.println("Payment Successfull");
-                    } else {
-                        System.out.println("Payment Error");
-                        viewBill(student_id);
-                    }
-                } else {
-                    System.out.println("Invalid Amount Entered");
-                    viewBill(student_id);
-                }
-            } else if (inp == 0)
-                welcomeStudent(studentName, student_id);
-        }
+		query = "select pending_bill from student where student_id =?";
+		preparedStatement = conn.prepareStatement(query);
+		preparedStatement.setString(1, student_id);
+		rs = preparedStatement.executeQuery();
+		rs.next();
+		int amt = rs.getInt("pending_bill");
+		System.out.println("Pending Bill: " + amt);
+		if (amt > 0) {
+			System.out.println("Press 1 to pay bill");
+			System.out.println("Press 0 to go back to previous menu");
+			int inp = in.nextInt();
+			if (inp == 1) {
+				System.out.println("Enter Amount");
+				int pay_amt = in.nextInt();
+				if (pay_amt <= amt) {
+					amt = amt - pay_amt;
+					query = "update student set pending_bill=? where STUDENT_ID=?";
+					preparedStatement = conn.prepareStatement(query);
+					preparedStatement.setInt(1, amt);
+					preparedStatement.setString(2, student_id);
+					if (preparedStatement.executeUpdate() == 1) {
+						System.out.println("Payment Successfull");
+                                                welcomeStudent(studentName, student_id);
+					} else {
+						System.out.println("Payment Error");
+						viewBill(student_id);
+					}
+				} else {
+					System.out.println("Invalid Amount Entered");
+					viewBill(student_id);
+				}
+			} else if (inp == 0)
+				welcomeStudent(studentName, student_id);
+		}
 
-    }
+	}
     /*
      * 04/1/2017 dsuri - Danish Suri This is a helper method used to check if
      * Student should be in waitlist, enroll or rejected
